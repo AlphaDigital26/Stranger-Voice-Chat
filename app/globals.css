@@ -100,6 +100,18 @@
 @keyframes wave-pulse { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
 @keyframes typing { 0%, 60%, 100% { translate: 0 0; opacity: 0.4; } 30% { translate: 0 -4px; opacity: 1; } }
 @keyframes spin-slow { to { rotate: 360deg; } }
+@keyframes drift {
+  0%   { translate: 0 0;      rotate: 0deg; }
+  25%  { translate: 14px -18px; rotate: 6deg; }
+  50%  { translate: -10px -30px; rotate: -4deg; }
+  75%  { translate: -18px -10px; rotate: 3deg; }
+  100% { translate: 0 0;      rotate: 0deg; }
+}
+@keyframes glow-wander {
+  0%, 100% { translate: 0 0; scale: 1; }
+  33%      { translate: 60px 40px; scale: 1.12; }
+  66%      { translate: -40px 70px; scale: 0.92; }
+}
 
 /* Sticky-note tilt lives in a variable so the drop animation can keep it */
 .note-tilt { transform: rotate(var(--tilt, 0deg)); }
@@ -126,6 +138,9 @@
   .anim-typing span:nth-child(2) { animation-delay: 0.15s; }
   .anim-typing span:nth-child(3) { animation-delay: 0.3s; }
   .anim-spin-slow { animation: spin-slow 14s linear infinite; }
+  /* Landing hero backdrop (components/landing/HeroBackground.tsx) */
+  .hero-drift { animation: drift 22s ease-in-out infinite; }
+  .hero-glow { animation: glow-wander 24s ease-in-out infinite; }
 }
 
 /* Scroll-driven: sections ease in and doodles draw as they enter the screen.

@@ -7,6 +7,7 @@ import MobileMenu from "@/components/layout/MobileMenu";
 import StickyNote from "@/components/ui/StickyNote";
 import PitchCountdown from "@/components/landing/PitchCountdown";
 import { CallMockup, ChatMockup } from "@/components/landing/PhoneMockups";
+import HeroBackground from "@/components/landing/HeroBackground";
 import {
   MicDoodle, ChatDoodle, InfinityDoodle, BulbDoodle, TargetDoodle, PeopleDoodle,
   MegaphoneDoodle, RocketDoodle, NoCameraDoodle, ShieldDoodle, FlagDoodle, SkipDoodle,
@@ -156,8 +157,10 @@ export default async function LandingPage() {
       </header>
 
       <main>
-        {/* ── Hero ── */}
-        <section className="container-app grid lg:grid-cols-[1.05fr_1fr] gap-12 lg:gap-10 pt-10 lg:pt-14 pb-20">
+        {/* ── Hero ── animated backdrop behind, content on top */}
+        <section className="relative">
+        <HeroBackground />
+        <div className="relative container-app grid lg:grid-cols-[1.05fr_1fr] gap-12 lg:gap-10 pt-10 lg:pt-14 pb-20">
           <div className="flex flex-col gap-6 lg:pt-5">
             <span className="font-hand text-[30px] text-marker -rotate-3 self-start leading-none anim-rise-in">
               got an idea? <span className="inline-block anim-wiggle">↓</span>
@@ -195,13 +198,22 @@ export default async function LandingPage() {
 
           {/* Whiteboard collage — notes drop in, then float */}
           <div className="relative flex flex-col items-center gap-8 lg:block lg:min-h-[540px]" aria-label="Example of a pitch and feedback">
-            <div className="anim-float lg:absolute lg:left-[30px] lg:top-[10px]">
+            <div className="relative anim-float lg:absolute lg:left-[30px] lg:top-[10px]">
+              {/* The idea: a glowing bulb on the pitch note */}
+              <span className="absolute -top-6 -left-6 z-10 anim-pop-in" style={{ "--delay": "1s" } as React.CSSProperties}>
+                <span className="absolute inset-0 rounded-full bg-highlight/30 blur-xl motion-safe:animate-pulse" />
+                <BulbDoodle size={46} draw className="relative text-highlight" style={{ "--delay": "1.1s" } as React.CSSProperties} />
+              </span>
               <StickyNote color="yellow" tilt={-4} drop delay={0.35} className="w-[250px] min-h-[210px]">
                 <p className="font-hand font-bold text-[32px] leading-[1.1]">Uber for dog walkers in tier-2 cities</p>
                 <p className="mt-3 text-[13px] text-ink/70">Founder #4821 · pitching</p>
               </StickyNote>
             </div>
-            <div className="anim-float lg:absolute lg:right-[20px] lg:top-[70px]" style={{ "--delay": "1.2s" } as React.CSSProperties}>
+            <div className="relative anim-float lg:absolute lg:right-[20px] lg:top-[70px]" style={{ "--delay": "1.2s" } as React.CSSProperties}>
+              {/* The reply: chat bubbles popping off the feedback note */}
+              <span className="absolute -top-7 -right-5 z-10 anim-wiggle">
+                <ChatDoodle size={42} draw className="text-marker" style={{ "--delay": "1.4s" } as React.CSSProperties} />
+              </span>
               <StickyNote color="pink" tilt={3} drop delay={0.6} className="w-[240px] min-h-[190px]">
                 <p className="font-hand font-bold text-[28px] leading-[1.1]">Who pays, the owner or the walker?</p>
                 <p className="mt-3 text-[13px] text-ink/70">Listener #0193 · feedback</p>
@@ -209,7 +221,13 @@ export default async function LandingPage() {
             </div>
             <div className="flex items-center gap-3 lg:absolute lg:left-[90px] lg:top-[270px] anim-pop-in" style={{ "--delay": "0.9s" } as React.CSSProperties}>
               <SoundWavesDoodle size={34} flip className="text-primary" />
-              <PitchCountdown />
+              {/* Slowly turning dashed ring around the live countdown */}
+              <span className="relative">
+                <svg viewBox="0 0 220 220" className="absolute -inset-4 w-[calc(100%+32px)] h-[calc(100%+32px)] text-primary/40 anim-spin-slow" aria-hidden="true">
+                  <circle cx="110" cy="110" r="104" fill="none" stroke="currentColor" strokeWidth="2.5" strokeDasharray="6 12" strokeLinecap="round" />
+                </svg>
+                <PitchCountdown />
+              </span>
               <span className="font-hand text-[26px] leading-[1.1] text-primary">
                 ← 60 sec pitch,<br />then 3 min feedback
               </span>
@@ -226,6 +244,7 @@ export default async function LandingPage() {
               ))}
             </div>
           </div>
+        </div>
         </section>
 
         {/* ── See it in action (phone previews) ── */}
