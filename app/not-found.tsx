@@ -1,53 +1,42 @@
 import Link from "next/link";
-import { Radio, Home, ArrowRight } from "lucide-react";
+import { Home } from "lucide-react";
+import Logo from "@/components/ui/Logo";
+import { QuestionDoodle } from "@/components/doodles/Doodles";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex flex-col">
-      {/* ── Header ── */}
-      <header className="absolute top-0 w-full z-40 bg-transparent">
-        <div className="container-app flex items-center justify-between h-14">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-[10px] bg-gradient-to-br from-[#7C5CFC] to-[#FF6B6B] flex items-center justify-center shadow-[0_2px_8px_rgba(124,92,252,0.4)]">
-              <Radio size={16} className="text-white" />
-            </div>
-            <span className="text-[16px] font-bold text-[#18181B]">PitchLine</span>
-          </Link>
-        </div>
+    <div className="min-h-screen bg-dots flex flex-col">
+      <header className="container-app flex items-center h-[72px]">
+        <Link href="/" aria-label="PitchLine home">
+          <Logo />
+        </Link>
       </header>
 
-      <main className="flex-1 flex items-center justify-center relative overflow-hidden px-4 py-20">
-        {/* Gradient blob */}
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: "radial-gradient(circle at 50% 50%, rgba(124,92,252,0.1) 0%, transparent 60%)",
-          }}
-        />
+      <main className="flex-1 flex items-center justify-center px-4 py-16">
+        <div className="text-center max-w-[520px] mx-auto">
+          <div className="relative inline-block">
+            <QuestionDoodle size={40} className="absolute -top-6 -left-10 text-marker anim-wiggle" />
+            <QuestionDoodle size={28} className="absolute -bottom-2 -right-9 text-primary anim-wiggle" />
+            <div className="bg-note-yellow shadow-note px-8 py-5 note-tilt anim-note-drop" style={{ "--tilt": "-3deg" } as React.CSSProperties}>
+              <p className="font-hand font-bold text-[56px] leading-none">404</p>
+            </div>
+          </div>
 
-        <div className="text-center relative z-10 max-w-lg mx-auto">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white shadow-card mb-8">
-            <span className="text-[#7C5CFC] font-bold text-4xl">404</span>
-          </div>
-          
-          <h1 className="text-[2rem] sm:text-[2.5rem] font-bold text-[#18181B] leading-tight mb-4">
-            Lost in the static
+          <h1 className="mt-8 text-[2.25rem] sm:text-[2.75rem] font-extrabold tracking-[-0.03em] leading-tight">
+            This page wandered off
           </h1>
-          
-          <p className="text-[16px] sm:text-[18px] text-[#71717A] mb-10 leading-relaxed">
-            The page you're looking for doesn't exist or has been moved. Let's get you back to pitching your ideas.
+
+          <p className="mt-4 text-[17px] text-muted leading-relaxed">
+            The page you&apos;re looking for doesn&apos;t exist or has moved. Let&apos;s get you back to pitching.
           </p>
-          
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href="/"
-              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 w-full sm:w-auto text-[15px] font-semibold text-white bg-[#7C5CFC] hover:bg-[#6547E0] rounded-full transition-all shadow-glow hover:shadow-[0_0_20px_rgba(124,92,252,0.4)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95"
-            >
-              <Home size={18} />
-              Return Home
-            </Link>
-          </div>
+
+          <Link
+            href="/"
+            className="mt-8 inline-flex items-center justify-center gap-2 px-6 py-3.5 w-full sm:w-auto text-[16px] font-bold text-on-primary bg-primary border-2 border-primary hover:bg-primary-hover rounded-[12px] transition-colors"
+          >
+            <Home size={18} />
+            Back home
+          </Link>
         </div>
       </main>
     </div>

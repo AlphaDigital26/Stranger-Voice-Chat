@@ -1,9 +1,10 @@
 import { SignIn } from "@clerk/nextjs";
+import AuthShell, { clerkAppearance } from "@/components/layout/AuthShell";
 
 export default function SignInPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <SignIn />
-    </div>
+    <AuthShell note="welcome back!">
+      <SignIn appearance={clerkAppearance} />
+    </AuthShell>
   );
 }

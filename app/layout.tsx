@@ -1,7 +1,24 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata, Viewport } from "next";
+import { Caveat, Manrope } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/Toast";
+import { clerkAppearance } from "@/components/layout/AuthShell";
+import { THEME_INIT_SCRIPT } from "@/lib/themeConfig";
+import Script from "next/script";
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-manrope",
+});
+
+const caveat = Caveat({
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["500", "700"],
+  variable: "--font-caveat",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -26,7 +43,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#7C5CFC",
+  themeColor: "#0D0E12",
 };
 
 export default function RootLayout({
@@ -35,18 +52,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${manrope.variable} ${caveat.variable}`} suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </head>
-      <body className="font-sans bg-bg text-text-primary antialiased">
-        <ClerkProvider>
+      <body className="font-sans bg-paper text-ink antialiased">
+        {/* Dark is the default; apply a saved light theme before first paint.
+            beforeInteractive scripts are injected into <head> by Next.js. */}
+        <Script id="theme-init" strategy="beforeInteractive">
+          {THEME_INIT_SCRIPT}
+        </Script>
+        <ClerkProvider appearance={clerkAppearance}>
           <ToastProvider>
             {children}
           </ToastProvider>

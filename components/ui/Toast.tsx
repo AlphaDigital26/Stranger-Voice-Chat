@@ -33,9 +33,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const icons = { success: CheckCircle, error: AlertCircle, info: Info };
   const colors = {
-    success: "text-[#22C55E]",
-    error: "text-[#EF4444]",
-    info: "text-[#7C5CFC]",
+    success: "text-live",
+    error: "text-danger",
+    info: "text-primary",
   };
 
   return (
@@ -55,7 +55,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               role="alert"
               className={clsx(
                 "flex items-start gap-3 pointer-events-auto",
-                "bg-[#18181B] text-white px-4 py-3 rounded-[12px] shadow-[0_4px_16px_rgba(0,0,0,0.3)]",
+                "bg-surface text-ink border-2 border-outline px-4 py-3 rounded-[12px] shadow-note",
                 "animate-slide-in"
               )}
             >
@@ -64,7 +64,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               <button
                 onClick={() => dismiss(t.id)}
                 aria-label="Dismiss notification"
-                className="shrink-0 text-white/60 hover:text-white transition-colors"
+                className="shrink-0 text-muted hover:text-ink transition-colors"
               >
                 <X size={16} />
               </button>

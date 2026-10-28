@@ -21,7 +21,7 @@ export interface MockUser {
 
 // Temporary wrapper to gradually migrate components from MockAuth to Clerk
 export function useAuth() {
-  const { user, isLoaded, isSignedIn } = useUser();
+  const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
 
   // Map Clerk user to our expected mock interface for now to avoid refactoring 7 files at once

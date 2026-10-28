@@ -1,6 +1,6 @@
 "use client";
 
-import { Mic, MicOff, PhoneOff, SkipForward, Flag, UserPlus, Check } from "lucide-react";
+import { Mic, MicOff, SkipForward, UserPlus, Check, MessageSquare } from "lucide-react";
 import { clsx } from "clsx";
 
 interface ControlBarProps {
@@ -8,128 +8,99 @@ interface ControlBarProps {
   onMute: () => void;
   onHangUp: () => void;
   onSkip: () => void;
-  onReport: () => void;
+  onChat: () => void;
+  unreadCount: number;
   onAddContact: () => void;
   contactRequestSent: boolean;
   contactAdded: boolean;
-  callDurationSeconds: number;
   canAddContact: boolean; // true after min duration threshold
 }
 
-function formatTimer(s: number) {
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return `${m.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
-}
+const tile =
+  "relative flex flex-col items-center justify-center gap-1 min-h-[60px] rounded-[12px] border-2 border-outline bg-surface text-ink text-[13px] font-bold transition-colors duration-150";
 
 export default function ControlBar({
   isMuted,
   onMute,
   onHangUp,
   onSkip,
-  onReport,
+  onChat,
+  unreadCount,
   onAddContact,
   contactRequestSent,
   contactAdded,
-  callDurationSeconds,
   canAddContact,
 }: ControlBarProps) {
   return (
-    // Bottom-anchored control bar, pb-safe for iOS home indicator
-    // min 44x44px touch targets per Apple HIG + UIUX Brief §8
-    <div className="fixed bottom-0 left-0 right-0 z-20 pb-[max(16px,env(safe-area-inset-bottom))]">
-      <div className="mx-auto max-w-[600px] px-4">
-        {/* Timer strip */}
-        <div className="flex items-center justify-center mb-3">
-          <span
-            className="text-[13px] font-mono font-medium text-[#A1A1AA] bg-[#1C1C1F]/80 backdrop-blur-sm px-3 py-1 rounded-full border border-[#27272A]"
-            aria-live="polite"
-            aria-label={`Call duration: ${formatTimer(callDurationSeconds)}`}
+    // Bottom-anchored, pb for the iOS home indicator; every target is at least 60px tall
+    <div className="fixed bottom-0 left-0 right-0 z-20 bg-paper/90 backdrop-blur-sm pt-3 pb-[max(20px,env(safe-area-inset-bottom))]">
+      <div className="mx-auto max-w-[520px] px-4 flex flex-col gap-2">
+        <div className="grid grid-cols-4 gap-2">
+          <button
+            onClick={onMute}
+            aria-label={isMuted ? "Unmute microphone" : "Mute microphone"}
+            aria-pressed={isMuted}
+            className={clsx(tile, isMuted ? "bg-danger-soft text-danger border-danger" : "hover:bg-paper-2")}
           >
-            {formatTimer(callDurationSeconds)}
-          </span>
-        </div>
+            {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
+            {isMuted ? "Unmute" : "Mute"}
+          </button>
 
-        {/* Control buttons */}
-        <div className="bg-[#1C1C1F]/90 backdrop-blur-md border border-[#27272A] rounded-[20px] shadow-[0_4px_16px_rgba(0,0,0,0.4)] px-4 py-3">
-          <div className="flex items-center justify-around gap-2">
-
-            {/* Mute */}
-            <button
-              onClick={onMute}
-              aria-label={isMuted ? "Unmute microphone" : "Mute microphone"}
-              aria-pressed={isMuted}
-              className={clsx(
-                "flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center px-2 rounded-[12px] transition-all duration-150",
-                isMuted
-                  ? "bg-[#EF4444]/20 text-[#EF4444]"
-                  : "text-[#F4F4F5] hover:bg-[#27272A]"
-              )}
-            >
-              {isMuted ? <MicOff size={22} /> : <Mic size={22} />}
-              <span className="text-[10px] font-medium leading-none">{isMuted ? "Unmute" : "Mute"}</span>
-            </button>
-
-            {/* Skip */}
-            <button
-              onClick={onSkip}
-              aria-label="Skip to next stranger"
-              className="flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center px-2 rounded-[12px] text-[#A1A1AA] hover:bg-[#27272A] transition-all duration-150"
-            >
-              <SkipForward size={22} />
-              <span className="text-[10px] font-medium leading-none">Skip</span>
-            </button>
-
-            {/* Hang Up — center, prominent, red */}
-            <button
-              onClick={onHangUp}
-              aria-label="Hang up call"
-              className="flex flex-col items-center gap-1 min-w-[60px] min-h-[60px] justify-center px-3 rounded-[16px] bg-[#EF4444] text-white hover:bg-[#DC2626] active:bg-[#B91C1C] shadow-sm transition-all duration-150"
-            >
-              <PhoneOff size={24} />
-              <span className="text-[10px] font-medium leading-none">Hang Up</span>
-            </button>
-
-            {/* Report */}
-            <button
-              onClick={onReport}
-              aria-label="Report this conversation"
-              className="flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center px-2 rounded-[12px] text-[#A1A1AA] hover:bg-[#27272A] hover:text-[#EF4444] transition-all duration-150"
-            >
-              <Flag size={22} />
-              <span className="text-[10px] font-medium leading-none">Report</span>
-            </button>
-
-            {/* Add Contact */}
-            <button
-              onClick={contactAdded ? undefined : onAddContact}
-              disabled={!canAddContact || contactAdded}
-              aria-label={
-                contactAdded
-                  ? "Contact added"
-                  : contactRequestSent
-                  ? "Contact request sent"
-                  : "Add as contact"
-              }
-              className={clsx(
-                "flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center px-2 rounded-[12px] transition-all duration-150",
-                contactAdded
-                  ? "text-[#22C55E]"
-                  : contactRequestSent
-                  ? "text-[#7C5CFC] opacity-70"
-                  : canAddContact
-                  ? "text-[#F4F4F5] hover:bg-[#27272A]"
-                  : "text-[#71717A] opacity-40 cursor-not-allowed"
-              )}
-            >
-              {contactAdded ? <Check size={22} /> : <UserPlus size={22} />}
-              <span className="text-[10px] font-medium leading-none">
-                {contactAdded ? "Added" : contactRequestSent ? "Sent" : "Add"}
+          <button
+            onClick={onChat}
+            aria-label={`Open text chat${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
+            className={clsx(tile, "hover:bg-paper-2")}
+          >
+            <MessageSquare size={20} />
+            Chat
+            {unreadCount > 0 && (
+              <span className="absolute -top-2 -right-2 min-w-6 h-6 px-1 rounded-full bg-marker text-white text-[11px] font-bold flex items-center justify-center">
+                {unreadCount > 9 ? "9+" : unreadCount}
               </span>
-            </button>
+            )}
+          </button>
 
-          </div>
+          <button
+            onClick={contactAdded ? undefined : onAddContact}
+            disabled={!canAddContact || contactAdded}
+            aria-label={
+              contactAdded
+                ? "Contact added"
+                : contactRequestSent
+                ? "Contact request sent"
+                : "Add as contact"
+            }
+            className={clsx(
+              tile,
+              contactAdded
+                ? "bg-live-soft text-live border-live"
+                : contactRequestSent
+                ? "bg-note-blue"
+                : canAddContact
+                ? "hover:bg-paper-2"
+                : "opacity-40 cursor-not-allowed"
+            )}
+          >
+            {contactAdded ? <Check size={20} /> : <UserPlus size={20} />}
+            {contactAdded ? "Added" : contactRequestSent ? "Sent" : "Contact"}
+          </button>
+
+          <button
+            onClick={onSkip}
+            aria-label="Skip to next stranger"
+            className={clsx(tile, "hover:bg-paper-2")}
+          >
+            <SkipForward size={20} />
+            Skip
+          </button>
         </div>
+
+        <button
+          onClick={onHangUp}
+          className="w-full min-h-[56px] rounded-[12px] border-2 border-outline bg-danger-strong text-white text-[16px] font-extrabold hover:bg-danger-hover transition-colors"
+        >
+          End call
+        </button>
       </div>
     </div>
   );
