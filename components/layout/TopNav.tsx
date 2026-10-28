@@ -2,33 +2,37 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { Radio, ChevronDown, History, Users, Settings, LogOut, User } from "lucide-react";
 import { clsx } from "clsx";
 import { SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+import Logo from "@/components/ui/Logo";
+import MobileMenu from "@/components/layout/MobileMenu";
 import { useAuth } from "@/lib/mockAuth";
 
+const LINKS = [
+  { href: "/intent", label: "Talk" },
+  { href: "/contacts", label: "Contacts" },
+  { href: "/history", label: "History" },
+  { href: "/settings", label: "Settings" },
+];
+
+// Signed-out phone menu: browse, and reach Settings for the theme switch
+const GUEST_LINKS = [
+  { href: "/", label: "Home" },
+  { href: "/blog", label: "Blog" },
+  { href: "/settings", label: "Settings" },
+];
+
 export default function TopNav() {
-  const pathname = usePathname();
-  const [menuOpen, setMenuOpen] = useState(false);
   const { isSignedIn } = useAuth();
+  const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-40 bg-white/75 backdrop-blur-lg border-b border-[#E5E5E8] shadow-sm">
-      <div className="container-app flex items-center justify-between h-14">
+    <header className="sticky top-0 z-40 bg-paper/85 backdrop-blur-lg border-b-2 border-outline">
+      <div className="container-app flex items-center justify-between h-16">
 
         {/* Logo */}
-        <Link
-          href="/intent"
-          className="flex items-center gap-2 group"
-          aria-label="PitchLine — go to home"
-        >
-          <div className="w-8 h-8 rounded-[10px] bg-gradient-to-br from-[#7C5CFC] to-[#FF6B6B] flex items-center justify-center shadow-[0_2px_8px_rgba(124,92,252,0.4)] group-hover:scale-105 transition-transform">
-            <Radio size={16} className="text-white" />
-          </div>
-          <span className="text-[16px] font-bold text-[#18181B] tracking-tight group-hover:text-[#7C5CFC] transition-colors">
-            PitchLine
-          </span>
+        <Link href="/" aria-label="PitchLine — go to home">
+          <Logo />
         </Link>
 
         {/* Right side */}
@@ -36,21 +40,41 @@ export default function TopNav() {
           {!isSignedIn ? (
             <>
               <SignInButton mode="modal">
-                <button className="px-3 py-1.5 text-[14px] font-medium text-[#18181B] hover:text-[#7C5CFC] transition-colors">
-                  Log In
+                <button className="hidden sm:block px-3 min-h-[44px] text-[15px] font-bold hover:text-primary transition-colors">
+                  Log in
                 </button>
               </SignInButton>
               <SignUpButton mode="modal">
-                <button className="px-4 py-1.5 text-[14px] font-medium text-white bg-[#7C5CFC] hover:bg-[#6547E0] rounded-full transition-colors">
-                  Get Started
+                <button className="px-4 py-2.5 text-[15px] font-bold text-on-primary bg-primary hover:bg-primary-hover rounded-[10px] transition-colors">
+                  Get started
                 </button>
               </SignUpButton>
+              <MobileMenu links={GUEST_LINKS} signedIn={false} />
             </>
           ) : (
             <>
-              <Link href="/intent" className="text-[14px] text-[#71717A] hover:text-[#7C5CFC] mr-4 hidden sm:block">Match</Link>
-              <Link href="/contacts" className="text-[14px] text-[#71717A] hover:text-[#7C5CFC] mr-4 hidden sm:block">Contacts</Link>
-              <Link href="/history" className="text-[14px] text-[#71717A] hover:text-[#7C5CFC] mr-4 hidden sm:block">History</Link>
+              <nav className="hidden sm:flex items-center gap-1 mr-2" aria-label="Main">
+                {LINKS.map(({ href, label }) => {
+                  const active = pathname === href || pathname.startsWith(`${href}/`);
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      aria-current={active ? "page" : undefined}
+                      className={clsx(
+                        "px-3 py-2 text-[15px] font-bold transition-colors",
+                        // Active page gets a highlighter stroke, like the landing headline
+                        active
+                          ? "underline decoration-highlight decoration-[6px] underline-offset-[6px]"
+                          : "text-muted hover:text-ink"
+                      )}
+                    >
+                      {label}
+                    </Link>
+                  );
+                })}
+              </nav>
+              <MobileMenu links={LINKS} signedIn />
               <UserButton />
             </>
           )}

@@ -11,9 +11,9 @@ interface AudioVisualizerProps {
   className?: string;
 }
 
-// The signature component — circular waveform visualizer
-// Reacts to remote peer's audio amplitude
-// UIUX Design Brief §6: CSS transform/opacity only (no layout-triggering)
+// Whiteboard version of the signature visualizer: a hand-drawn marker circle
+// with marker bars inside that follow the remote peer's volume.
+// CSS transform/opacity only (no layout-triggering properties).
 export default function AudioVisualizer({
   isActive,
   isSpeaking = false,
@@ -21,22 +21,14 @@ export default function AudioVisualizer({
   size = "lg",
   className,
 }: AudioVisualizerProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number>(0);
   const [tick, setTick] = useState(0);
 
-  const sizes = { sm: 120, md: 180, lg: 240 };
+  const sizes = { sm: 140, md: 190, lg: 230 };
   const px = sizes[size];
 
-  // Idle gentle pulse: opacity oscillates 0.4–1.0
-  // Active: amplitude drives scale 1.0–1.25
-  const idleOpacity = isActive
-    ? 0.4 + amplitude * 0.6
-    : 0.4 + 0.3 * Math.abs(Math.sin(tick * 0.04));
-
-  const scale = isActive && isSpeaking
-    ? 1 + amplitude * 0.18
-    : 1;
+  // The circle swells slightly while the stranger talks
+  const scale = isActive && isSpeaking ? 1 + amplitude * 0.12 : 1;
 
   useEffect(() => {
     let frame = 0;
@@ -52,94 +44,46 @@ export default function AudioVisualizer({
   const barCount = 7;
   const barHeights = Array.from({ length: barCount }, (_, i) => {
     const center = (barCount - 1) / 2;
-    const distFromCenter = Math.abs(i - center) / center; // 0 at center, 1 at edge
-    const base = 1 - distFromCenter * 0.5; // taller at center
+    const base = 1 - (Math.abs(i - center) / center) * 0.5; // taller at center
     if (!isActive) {
       // Idle: gentle cascade
-      const wave = Math.sin(tick * 0.06 + i * 0.8) * 0.3 + 0.7;
-      return base * wave;
+      return base * (Math.sin(tick * 0.06 + i * 0.8) * 0.3 + 0.7) * 0.6;
     }
-    // Active: amplitude-driven + individual phase
     const phase = Math.sin(tick * 0.12 + i * 1.2) * 0.3;
-    return base * (0.3 + amplitude * 0.7 + phase * amplitude);
+    return base * (0.25 + amplitude * 0.75 + phase * amplitude);
   });
 
   return (
     <div
-      className={clsx("flex flex-col items-center justify-center gap-6", className)}
-      aria-label={isActive ? (isSpeaking ? "Stranger is speaking" : "Connected, listening") : "Connecting..."}
-      aria-live="polite"
+      className={clsx("relative flex items-center justify-center", className)}
+      style={{ width: px, height: px }}
+      aria-label={isActive ? (isSpeaking ? "Stranger is speaking" : "Connected, listening") : "Connecting"}
+      role="img"
     >
-      {/* Outer glow ring */}
-      <div
-        className="relative flex items-center justify-center rounded-full"
-        style={{
-          width: px,
-          height: px,
-          transition: "transform 80ms ease-out, opacity 80ms ease-out",
-          transform: `scale(${scale})`,
-          opacity: idleOpacity,
-        }}
+      <svg
+        viewBox="0 0 140 140"
+        className="absolute inset-0 w-full h-full"
+        style={{ transform: `scale(${scale})`, transition: "transform 100ms ease-out" }}
+        aria-hidden="true"
       >
-        {/* Glow */}
-        <div
-          className="absolute inset-0 rounded-full"
-          style={{
-            background: "radial-gradient(circle, rgba(124,92,252,0.35) 0%, rgba(124,92,252,0) 70%)",
-            transform: `scale(${1 + (isActive ? amplitude * 0.5 : 0)})`,
-            transition: "transform 120ms ease-out",
-          }}
+        <path
+          d="M70 12 C 110 10, 132 40, 128 74 C 124 110, 96 130, 66 128 C 32 126, 10 100, 12 68 C 14 38, 36 14, 74 16"
+          fill="none"
+          className={isActive ? "stroke-marker" : "stroke-line"}
+          strokeWidth={isSpeaking ? 6 : 4.5}
+          strokeLinecap="round"
         />
+      </svg>
 
-        {/* Middle ring */}
-        <div
-          className="absolute rounded-full border-2 border-[#7C5CFC]/30"
-          style={{
-            width: px * 0.75,
-            height: px * 0.75,
-          }}
-        />
-
-        {/* Inner circle */}
-        <div
-          className="relative z-10 rounded-full flex items-center justify-center"
-          style={{
-            width: px * 0.5,
-            height: px * 0.5,
-            background: "linear-gradient(135deg, #7C5CFC 0%, #FF6B6B 100%)",
-            boxShadow: "0 8px 32px rgba(124, 92, 252, 0.4)",
-          }}
-        >
-          {/* Waveform bars inside circle */}
-          <div className="flex items-end justify-center gap-[3px]" style={{ height: px * 0.22 }}>
-            {barHeights.map((h, i) => (
-              <div
-                key={i}
-                className="rounded-full bg-white"
-                style={{
-                  width: 3,
-                  height: `${Math.max(20, h * 100)}%`,
-                  transition: "height 80ms ease-out",
-                  opacity: 0.9,
-                  boxShadow: "0 0 8px rgba(255, 255, 255, 0.5)",
-                }}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Status text */}
-      <div className="text-center">
-        {!isActive && (
-          <p className="text-[14px] text-[#71717A] animate-pulse-slow">Connecting...</p>
-        )}
-        {isActive && isSpeaking && (
-          <p className="text-[12px] font-medium text-[#7C5CFC]">Speaking</p>
-        )}
-        {isActive && !isSpeaking && (
-          <p className="text-[12px] text-[#71717A]">Listening...</p>
-        )}
+      {/* Marker bars */}
+      <div className="relative flex items-center justify-center gap-[6px]" style={{ height: px * 0.32 }} aria-hidden="true">
+        {barHeights.map((h, i) => (
+          <span
+            key={i}
+            className={clsx("w-[6px] rounded-full", isActive ? "bg-primary" : "bg-muted/50")}
+            style={{ height: `${Math.max(14, Math.min(100, h * 100))}%`, transition: "height 80ms ease-out" }}
+          />
+        ))}
       </div>
     </div>
   );

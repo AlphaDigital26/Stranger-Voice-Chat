@@ -11,24 +11,26 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = "primary", size = "md", pill = false, loading = false, className, children, disabled, ...props }, ref) => {
     const base =
-      "inline-flex items-center justify-center gap-2 font-medium transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C5CFC] focus-visible:ring-offset-2 select-none active:scale-95";
+      "inline-flex items-center justify-center gap-2 font-bold transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 select-none active:translate-y-px";
 
+    // Whiteboard style: solid marker colours, or a card-coloured button with a 2px outline
     const variants = {
-      primary: "bg-[#7C5CFC] text-white hover:bg-[#6547E0] hover:shadow-glow shadow-sm",
-      secondary: "bg-white text-[#18181B] border border-[#E5E5E8] hover:bg-[#FAFAFA] hover:shadow-card",
-      destructive: "bg-[#EF4444] text-white hover:bg-[#DC2626] active:bg-[#DC2626]",
-      ghost: "bg-transparent text-[#18181B] hover:bg-[#F4F4F5] active:bg-[#E5E5E8]",
-      neutral: "bg-[#64748B] text-white hover:bg-[#475569] active:bg-[#475569]",
+      primary: "bg-primary text-on-primary border-2 border-primary hover:bg-primary-hover hover:border-primary-hover",
+      secondary: "bg-surface text-ink border-2 border-outline hover:bg-paper-2",
+      destructive: "bg-danger-strong text-white border-2 border-danger hover:bg-danger-hover hover:border-danger-hover",
+      ghost: "bg-transparent text-ink border-2 border-transparent hover:bg-paper-2",
+      neutral: "bg-ink text-paper border-2 border-ink hover:bg-muted hover:border-muted",
     };
 
     const sizes = {
-      sm: "text-[12px] px-3 py-1.5 min-h-[32px]",
-      md: "text-[14px] px-4 py-2 min-h-[40px]",
-      lg: "text-[16px] px-6 py-3 min-h-[48px]",
+      sm: "text-[13px] px-3 py-1.5 min-h-[36px]",
+      md: "text-[14px] px-4 py-2 min-h-[44px]",
+      lg: "text-[16px] px-6 py-3 min-h-[52px]",
     };
 
-    const disabledStyles = "opacity-40 cursor-not-allowed pointer-events-none";
-    const radiusStyle = pill ? "rounded-full" : "rounded-[8px]";
+    // Flat and readable on the dark board (a faded primary fill was too low-contrast)
+    const disabledStyles = "bg-paper-2! text-muted! border-line! cursor-not-allowed pointer-events-none";
+    const radiusStyle = pill ? "rounded-full" : "rounded-[12px]";
 
     return (
       <button

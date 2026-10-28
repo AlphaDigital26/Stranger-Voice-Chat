@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AlertTriangle } from "lucide-react";
+import { clsx } from "clsx";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 
@@ -47,27 +48,26 @@ export default function ReportModal({
     >
       <div className="flex flex-col gap-5">
         {/* Icon */}
-        <div className="flex items-center gap-3 p-3 bg-[#FEF2F2] rounded-[10px]">
-          <AlertTriangle size={18} className="text-[#EF4444] shrink-0" />
-          <p className="text-[13px] text-[#71717A] leading-snug">
-            Submitting this report will end the call immediately. Our team will review it shortly.
+        <div className="flex items-center gap-3 p-3 bg-danger-soft border-2 border-danger rounded-[12px]">
+          <AlertTriangle size={18} className="text-danger shrink-0" />
+          <p className="text-[14px] text-ink leading-snug">
+            Reporting ends the call right away and blocks this person for you. Our team reviews every report.
           </p>
         </div>
 
         {/* Reason selector */}
         <fieldset>
-          <legend className="text-[14px] font-medium text-[#18181B] mb-3">
-            Select a reason
+          <legend className="text-[15px] font-bold text-ink mb-3">
+            What happened?
           </legend>
           <div className="flex flex-col gap-2">
             {REASONS.map(({ code, label }) => (
               <label
                 key={code}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-[10px] cursor-pointer border transition-all duration-100 hover:border-[#7C5CFC]/40"
-                style={{
-                  borderColor: selectedReason === code ? "#7C5CFC" : "#E5E5E8",
-                  background: selectedReason === code ? "rgba(124,92,252,0.05)" : "transparent",
-                }}
+                className={clsx(
+                  "flex items-center gap-3 px-3 py-3 rounded-[12px] cursor-pointer border-2 transition-colors duration-100",
+                  selectedReason === code ? "border-outline bg-note-pink" : "border-line hover:border-outline/50"
+                )}
               >
                 <input
                   type="radio"
@@ -75,10 +75,10 @@ export default function ReportModal({
                   value={code}
                   checked={selectedReason === code}
                   onChange={() => setSelectedReason(code)}
-                  className="accent-[#7C5CFC]"
+                  className="accent-primary"
                   aria-label={label}
                 />
-                <span className="text-[14px] text-[#18181B]">{label}</span>
+                <span className="text-[15px] font-medium text-ink">{label}</span>
               </label>
             ))}
           </div>
@@ -87,23 +87,24 @@ export default function ReportModal({
         {/* Optional note for "Other" */}
         {selectedReason === "other" && (
           <div className="flex flex-col gap-1.5">
-            <label className="text-[13px] font-medium text-[#18181B]">
-              Additional details <span className="text-[#71717A] font-normal">(optional)</span>
+            <label htmlFor="report-note" className="text-[14px] font-bold text-ink">
+              More details <span className="text-muted font-normal">(optional)</span>
             </label>
             <textarea
+              id="report-note"
               value={note}
               onChange={(e) => setNote(e.target.value.slice(0, 280))}
-              placeholder="Describe what happened..."
+              placeholder="Describe what happened…"
               rows={3}
-              className="w-full px-3 py-2 text-[14px] text-[#18181B] bg-white border border-[#E5E5E8] rounded-[8px] resize-none focus:outline-none focus:ring-2 focus:ring-[#7C5CFC]/40 placeholder:text-[#71717A]"
+              className="w-full px-3 py-2.5 text-[15px] text-ink bg-surface border-2 border-line rounded-[12px] resize-none focus:outline-none focus:border-primary placeholder:text-muted"
             />
-            <p className="text-[11px] text-[#71717A] text-right">{note.length}/280</p>
+            <p className="text-[11px] text-muted text-right">{note.length}/280</p>
           </div>
         )}
 
         {/* Error */}
         {submitError && (
-          <p className="text-[13px] text-[#EF4444]" role="alert">{submitError}</p>
+          <p className="text-[13px] text-danger" role="alert">{submitError}</p>
         )}
 
         {/* Actions */}
@@ -118,7 +119,7 @@ export default function ReportModal({
             disabled={!selectedReason || isSubmitting}
             loading={isSubmitting}
           >
-            Submit Report & End Call
+            Report &amp; end call
           </Button>
         </div>
       </div>

@@ -53,7 +53,7 @@ export default function Modal({
     >
       {/* Scrim */}
       <div
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-black/70 backdrop-blur-[2px]"
         onClick={destructive ? undefined : onClose}
         aria-hidden="true"
       />
@@ -62,7 +62,7 @@ export default function Modal({
       <div
         ref={panelRef}
         className={clsx(
-          "relative z-10 w-full bg-white rounded-[12px] shadow-[0_4px_16px_rgba(0,0,0,0.12)] animate-slide-in",
+          "relative z-10 w-full bg-surface border-2 border-outline rounded-[16px] shadow-modal animate-slide-in",
           maxWidth,
           className
         )}
@@ -71,7 +71,7 @@ export default function Modal({
         {(title || onClose) && (
           <div className="flex items-center justify-between px-6 pt-5 pb-0">
             {title && (
-              <h2 id="modal-title" className="text-[20px] font-semibold text-[#18181B]">
+              <h2 id="modal-title" className="text-[20px] font-extrabold tracking-tight text-ink">
                 {title}
               </h2>
             )}
@@ -79,7 +79,7 @@ export default function Modal({
               <button
                 onClick={onClose}
                 aria-label="Close modal"
-                className="p-1 rounded-[8px] text-[#71717A] hover:bg-[#F4F4F5] transition-colors"
+                className="p-1 rounded-[8px] text-muted hover:bg-paper-2 transition-colors"
               >
                 <X size={18} />
               </button>
