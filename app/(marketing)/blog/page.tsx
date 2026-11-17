@@ -5,8 +5,8 @@ import AdSlot from "@/components/ui/AdSlot";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Blog — PitchLine",
-  description: "Founder stories, idea validation tips, and startup feedback strategies from the PitchLine community.",
+  title: "Blog — Stranger Voice Chat",
+  description: "Founder stories, idea validation tips, and startup feedback strategies from the Stranger Voice Chat community.",
 };
 
 import { BLOG_POSTS } from "./data";
@@ -28,7 +28,7 @@ export default function BlogPage() {
       <main className="flex-1">
         {/* Hero */}
         <div className="container-app max-w-[780px] pt-12 pb-8">
-          <span className="font-hand text-[28px] text-marker -rotate-2 inline-block">the pitchline blog</span>
+          <span className="font-hand text-[28px] text-marker -rotate-2 inline-block">the blog</span>
           <h1 className="mt-1 text-[2.5rem] sm:text-[3.25rem] font-extrabold tracking-[-0.03em] leading-[1.05]">
             Notes for people with ideas
           </h1>

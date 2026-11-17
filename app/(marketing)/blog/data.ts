@@ -38,7 +38,7 @@ Imagine pitching Airbnb in its earliest days.
 
 ## Why Strangers Make the Best Critics
 
-When you pitch to friends, they want to support you. They will nod, smile, and tell you it's a great idea. A stranger on PitchLine owes you nothing. If your 60-second pitch is confusing, they will tell you. 
+When you pitch to friends, they want to support you. They will nod, smile, and tell you it's a great idea. A stranger on Stranger Voice Chat owes you nothing. If your 60-second pitch is confusing, they will tell you. 
 
 Use this feedback loop. If the stranger asks a clarifying question, your pitch failed. Rewrite it, jump back in the queue, and try again until the stranger immediately understands the value proposition.
     `
@@ -97,7 +97,7 @@ Instead, you should ask about their past behavior: *"Tell me about the last time
 
 ## Mistake 2: Relying on the "Mom Test" Fails
 
-Asking your friends and family if your idea is good is useless. They have a vested interest in your happiness and will avoid hurting your feelings. You must get out of your echo chamber. This is exactly why we built PitchLine—to give you access to unbiased, objective strangers who don't care about your feelings.
+Asking your friends and family if your idea is good is useless. They have a vested interest in your happiness and will avoid hurting your feelings. You must get out of your echo chamber. This is exactly why we built Stranger Voice Chat—to give you access to unbiased, objective strangers who don't care about your feelings.
 
 ## Mistake 3: Treating Landing Page Signups as Absolute Truth
 

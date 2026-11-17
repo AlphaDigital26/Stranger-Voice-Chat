@@ -1,18 +1,91 @@
 # Redesign Document
-## PitchLine — Anonymous Voice Rooms for Founders & Ideas
+## PitchLine — Voice Chat with Strangers Who Share Your Tag
 
-**Status:** Draft v2.0 (supersedes the UI direction in `UIUX-Design-Brief.md` and the stack in `TRD-Voice-Stranger-App.md` where they conflict)
-**Last updated:** October 26, 2026
+**Status:** Draft v3.0 (supersedes the UI direction in `UIUX-Design-Brief.md` and the stack in `TRD-Voice-Stranger-App.md` where they conflict)
+**Last updated:** November 16, 2026
 **Reference product (concept only):** AirTalk — https://www.airtalk.live/
+**Live demo:** https://strangervoicechatdemo.netlify.app (deployed from the `jyoti` branch)
+
+> **v3 changes the product (November 2026).** PitchLine now works like AirTalk with one difference: you pick a **tag** and are only connected with people who picked the **same tag**. There is **no login of any kind**. §0A is the current product definition; where older sections (roles, idea card, Pitch Round, Google/email sign-in) disagree with it, §0A wins.
+
+---
+
+## 0. Status at a glance
+
+**Done**
+- Build fixed and passing; Next 16 conventions (`proxy.ts`, async `params`).
+- Visual identity chosen and built: **Direction F "Whiteboard"**, dark by default with a light theme switch in Settings (§4).
+- Every screen redesigned: landing, tag picker, queue, call, post-call, friends, messages, history, settings, blog, legal, error pages.
+- Hand-drawn SVG doodle set and motion system (respects reduced motion); mobile menu and layouts verified at 360 px.
+- Clerk removed. Supabase anonymous sessions give every device a hidden ID with no login screens (§0A.4).
+- **Tag catalogue** of ~130 tags in 7 categories, searchable picker with popular tags and live "waiting" counts (§0A.2).
+- **Same-tag matchmaking** in Postgres (`supabase/migrations/0001_tag_matching.sql`), 45-second wait with Retry / Choose another tag (§0A.3).
+- LiveKit token route only admits the two people matched into a call.
+- Demo bot kept as an optional practice partner when nobody is on a tag.
+- Sample ad creatives in every ad slot; no ads on call or message screens.
+- Demo deployed to Netlify.
+
+**Needs a one-time setup step**
+- Run `supabase/migrations/0001_tag_matching.sql` in Supabase → SQL Editor. Until then the queue shows "matching isn't switched on yet" and offers the demo bot.
+
+**Not started**
+- Friends, messages and history from the database (currently sample data), moderated text chat, reports/blocks/bans, tag landing pages, free tools, consent tool, AdSense account, premium.
+
+---
+
+## 0A. Product definition (v3, current)
+
+### 0A.1 What PitchLine is
+An anonymous, voice-only web app, like AirTalk, for meeting strangers who share an interest. You pick a tag (for example **#Textile**), and PitchLine connects you by voice with someone who picked the **same** tag. Free, 18+, no camera, no signup. Revenue comes from ads on the non-conversation pages.
+
+### 0A.2 Tags
+- ~130 curated tags in 7 categories: Industries & trade, Tech, Business & startups, Money & finance, Creators & media, Careers & learning, Social impact (`lib/tags.ts`).
+- Curated list plus search, no free-text tags, so people land on the same tags and actually get matched.
+- "Popular" tags shown first; each tag shows how many people are waiting on it right now.
+- A tag's slug never changes once live; labels can.
+- Every tag is linkable: `/intent?tag=textile` opens the picker with it selected (used by the landing page's tag directory, good for SEO).
+
+### 0A.3 Matching rules
+1. Only people on the **same tag** are ever connected.
+2. Optional country and language preferences narrow the match further; "any" matches everyone on the tag.
+3. The oldest compatible person waiting on the tag is matched first. Row locking (`FOR UPDATE SKIP LOCKED`) stops two people grabbing the same partner.
+4. While waiting, the browser checks every 2 s; waiting entries not refreshed for 12 s are ignored.
+5. **After 45 seconds with no match**, waiting stops and the person chooses **Retry** or **Choose another tag**. A small "practise with the demo bot" link is also offered.
+6. **Skip** puts you straight back in the queue on the same tag; **Next person** on the post-call screen does the same.
+
+### 0A.4 Identity without login
+- No sign-up, log-in, email or password anywhere.
+- On the first "Find someone", the browser silently gets an anonymous Supabase session: a hidden device ID used for matching, friends, history and bans.
+- 18+ is confirmed once per device with a checkbox and stored on that ID; `proxy.ts` blocks the queue, call and post-call screens until it's confirmed.
+- Settings → "Forget this device" drops the ID and starts fresh.
+
+### 0A.5 Features kept from AirTalk
+- Voice calls with mute, skip, report, end call.
+- Text chat during calls (moderation to be added).
+- **Friends:** both people tap "Friend" to stay in touch; saved per device.
+- **Call history** per device, with "find someone on this tag again".
+- Country and language filters.
+
+### 0A.6 Ads and revenue
+- Google AdSense on content pages only: landing, tag picker (below the content), post-call, friends list, history, settings, blog.
+- Never on the live call screen or private messages (AdSense private-communications policy).
+- Most ad revenue will come from content pages, so the tag directory, blog and future tag landing pages matter (§8).
+
+### 0A.7 Superseded by v3
+- Roles (Pitcher/Listener/Founder), the idea card and the timed Pitch Round (§3.1, §3.3, §3.4).
+- Google/email sign-in and "Save account" (§5.1).
+- The four intents and the earlier role-based matchmaking plan (§6.3 is replaced by §0A.3).
 
 ---
 
 ## 1. Summary
 
+> *This summary describes v2. For the current product (tags, no login), see §0A.*
+
 PitchLine keeps its idea: an anonymous, voice-only, 18+ app where strangers are matched to pitch startup ideas, give feedback, or talk founder-to-founder. This redesign does three things:
 
 1. **Borrows AirTalk's product logic.** Instant start, one tap to match, skip anytime, voice first with text alongside, friends and reconnects, and a content-heavy marketing site that brings in search traffic.
-2. **Gives PitchLine its own identity and purpose.** AirTalk is casual small talk. PitchLine is structured idea exchange: roles, a one-line idea card, timed pitch rounds, and feedback. The visual language is editorial and calm, not playful, so it won't look like AirTalk.
+2. **Gives PitchLine its own identity and purpose.** AirTalk is casual small talk. PitchLine is structured idea exchange: roles, a one-line idea card, timed pitch rounds, and feedback. The visual language is a hand-drawn founder's whiteboard (sticky notes, marker doodles) on a premium dark board, so it won't look like AirTalk.
 3. **Moves to a stack that can actually ship matchmaking.** The current repo fakes matching. The new stack puts auth, database, realtime and matching on one platform (Supabase) and keeps LiveKit for voice.
 
 ---
@@ -114,48 +187,59 @@ Topics are a **soft preference**: same topic first, then any.
 
 ## 4. Visual identity (deliberately not AirTalk)
 
-### 4.1 Direction: "The Pitch Room"
+### 4.1 Direction F: "Whiteboard" (chosen October 2026)
 
-Think of a founder's notebook crossed with late-night radio: warm paper tones, strong serif headlines, thin rules, one confident accent colour. Content pages read like a well-made publication. That suits SEO and AdSense, because content-led pages look trustworthy to both users and reviewers. The call screen switches to a focused dark mode.
+Six directions were mocked up (Pitch Room, Studio, Deal Memo, Adda, Metro Line, Whiteboard); **Whiteboard** was chosen. It looks like a founder's brainstorming board: ideas and feedback live on tilted sticky notes, annotations are handwritten in marker, and timers are hand-drawn circles.
 
-Avoid: emoji as icons, cartoon illustrations, purple-pink gradients (the current UI and many chat apps use them), and glassmorphism.
+- **Dark by default** ("premium dark"): a midnight board with a faint dot grid, soft grey card outlines and bright pastel sticky notes.
+- **Light theme** (the original paper whiteboard) is available in Settings → Appearance. The choice is saved per device in `localStorage` and applied before first paint (no flash).
+- Avoid: emoji as icons, purple gradients, glassmorphism. Use the doodle set instead (§4.5).
+
+All colours live in one place, `app/globals.css`. Components only use token classes (`bg-surface`, `text-ink`, `border-outline`…), never raw hex values.
 
 ### 4.2 Colour tokens
 
-| Token | Light (marketing & app) | Dark (call screen) | Use |
+| Token | Dark (default) | Light | Use |
 |---|---|---|---|
-| `--bg` | `#F7F4EE` (paper) | `#0F0E0C` | Page background |
-| `--surface` | `#FFFFFF` | `#1A1815` | Cards, sheets |
-| `--line` | `#E6E0D6` | `#2A2723` | Borders, rules |
-| `--ink` | `#16130F` | `#F2EEE7` | Primary text |
-| `--muted` | `#6B645A` | `#9C958A` | Secondary text |
-| `--signal` | `#FF5B2E` | `#FF6A3D` | Primary accent: CTAs, the live clock, focus |
-| `--live` | `#1FB57A` | `#2BD08F` | Connected / online states |
-| `--danger` | `#E5484D` | `#FF6369` | Report, hang up |
+| `paper` | `#0D0E12` | `#FCFCFA` | Page background |
+| `paper-2` | `#1B1D25` | `#F3F4F1` | Hover, subtle fills |
+| `surface` | `#15171D` | `#FFFFFF` | Cards, bars, inputs |
+| `line` | `#2C2F3A` | `#D9DCE3` | Quiet borders, dividers |
+| `outline` | `#474C5C` | `#1B1F2A` | The whiteboard's 2 px card outlines |
+| `ink` | `#EDEEF2` | `#1B1F2A` | Primary text |
+| `muted` | `#A2A8B7` | `#4A5163` | Secondary text |
+| `primary` | `#7D94FF` | `#1D3FBF` | Buttons, links, logo (marker blue) |
+| `on-primary` | `#0D0E12` | `#FFFFFF` | Text on primary buttons |
+| `marker` | `#FF6F5B` | `#E23D28` | Handwritten annotations |
+| `highlight` | `#F4C54F` | `#FFC933` | Highlighter strokes |
+| `note-yellow / pink / blue / green / orange` | softened pastels | bright pastels | Sticky notes (one colour per role / intent / tag) |
+| `live` / `warning` | `#3DD68C` / `#E5A93D` | `#1F9D55` / `#B7791F` | Connected, waiting |
+| `danger` / `danger-strong` | `#FF7A66` / `#C63A28` | `#D63A26` | Danger text / danger button fill |
 
-Contrast: `--ink` on `--bg` and white on `--signal` both meet WCAG AA for text at the sizes used. Check every new pairing with a contrast tool.
+**Sticky notes and ads stay "paper" in both themes:** a CSS rule on `[class*="bg-note-"]` and `.on-light` switches everything written on them back to dark marker colours, so new notes are automatically readable.
 
 ### 4.3 Typography
 
 | Role | Font | Notes |
 |---|---|---|
-| Display (H1–H2, hero) | **Instrument Serif** (or Fraunces) | Large and tight. Gives the editorial feel |
-| UI and body | **Geist** (or Inter) | 16 px base, 1.6 line-height for articles |
-| Numbers and timers | **Geist Mono** | Tabular figures on the Pitch Clock and queue timer |
+| Headlines and UI | **Manrope** (`font-sans`) | Extra-bold, tight tracking for headlines; 15–17 px body |
+| Handwritten notes | **Caveat** (`font-hand`) | Annotations, sticky-note text, timers' captions, section eyebrows |
 
-Load with `next/font` (self-hosted, no layout shift), not the Google Fonts `<link>` currently in `app/layout.tsx`.
+Both are loaded with `next/font` (self-hosted, no layout shift).
 
 ### 4.4 Shape, space, motion
 
-- Radius 12 px for cards and 999 px for pill buttons and chips.
-- 4 px spacing grid. Content max-width 1120 px; article max-width 680 px.
-- Borders over shadows. One soft shadow level, used only for floating sheets.
-- Motion is short and purposeful: 150–250 ms ease-out. Honour `prefers-reduced-motion`. No looping decoration on content pages.
-- Icons: Lucide, 1.5 px stroke.
+- 12 px radius for buttons and inputs, 16 px for cards; 2 px outlines instead of heavy shadows.
+- Sticky notes tilt between −4° and 4°; soft shadow (`shadow-note`).
+- Motion: notes drop onto the board, doodles "draw themselves", sections rise in on scroll (scroll-driven animations where supported), gentle floating and drifting in the hero. All of it is off for `prefers-reduced-motion`, and content is fully visible without animation.
+- Icons: Lucide for controls; hand-drawn doodles for illustration.
 
-### 4.5 Signature component: the Pitch Clock
+### 4.5 Signature elements
 
-A ring around the call centre, split into segments (pitch / feedback / free talk). The ring's thickness responds to the remote speaker's volume, so it acts as both timer and voice visualizer. It replaces the current `AudioVisualizer` blob. It's the one element people should remember PitchLine by. Use it in the logo mark, the hero and social images.
+- **Sticky notes** (`components/ui/StickyNote.tsx`): idea cards, feedback, role tags, chat messages.
+- **Hand-drawn timer** (`components/ui/HandTimer.tsx`): the whiteboard version of the Pitch Clock; on the landing page it counts down a real 60-second pitch. The segmented pitch / feedback / free-talk clock for live calls comes in Step 6.
+- **Doodle set** (`components/doodles/Doodles.tsx`): 19 marker icons (mic, chat, bulb, rocket, target, shield, sound waves, sparkles, arrows…) that can draw themselves on load or on scroll.
+- **Logo**: "PitchLine" in Caveat with a red marker squiggle (`components/ui/Logo.tsx`).
 
 ---
 
@@ -206,7 +290,7 @@ Landing ─► "Start pitching" ─► /start
 | `/contacts/[id]` | **Never** | Messages with a contact |
 | `/history`, `/settings` | Yes | History, account, data export/delete |
 
-Renames from the current repo: `/intent` becomes `/start`, `/queue` becomes `/match`, `/call` becomes `/room`, and `/post-call` becomes `/wrap`.
+Renames from the current repo: `/intent` becomes `/start`, `/queue` becomes `/match`, `/call` becomes `/room`, and `/post-call` becomes `/wrap`. **Deferred:** the current names are kept until Step 6, when these screens move to roles, topics and the idea card. The `(marketing)` and `(app)` route groups are in place, and every app route is marked `noindex`.
 
 ---
 
@@ -232,20 +316,21 @@ Renames from the current repo: `/intent` becomes `/start`, `/queue` becomes `/ma
 | Payments (later) | **Stripe**, or **Razorpay** if your customers and business are India-based | Premium tier |
 | Analytics | **PostHog** (product) + **Google Search Console** (SEO) | Funnels: landing → start → matched → 60 s+ call |
 | Errors | **Sentry** | Client and server |
-| Hosting | **Vercel** (web) + Supabase Cloud + LiveKit Cloud | No servers to manage in V1 |
+| Hosting | **Vercel** (web) + Supabase Cloud + LiveKit Cloud | No servers to manage in V1. The current demo runs on **Netlify**, which works too |
 
 ### 6.2 What changes from the current repo
 
-| Current | New | Action |
+| Current | New | Status |
 |---|---|---|
-| `@clerk/nextjs` | `@supabase/ssr` + `@supabase/supabase-js` | Replace `lib/mockAuth.tsx` with a real `useSession` hook. Remove Clerk sign-in pages and the `.agents/skills/clerk-*` files |
-| `middleware.ts` | `proxy.ts` | Next 16 rename. Refresh the Supabase session and gate app routes |
-| `socket.io-client` | (removed) | Supabase Realtime replaces it |
-| Fake queue (`setTimeout`) | `match_join` RPC + Realtime | See §6.3 |
-| Token route accepts any room | Token route checks `sessions` for the user | Only the two matched users can join a room |
-| `lib/mockData.ts` | Supabase queries | Delete once screens are wired |
-| `livekit-client` (transitive) | Add explicitly to `package.json` | Pin it |
-| Google Fonts `<link>` | `next/font` | Faster, no layout shift |
+| `@clerk/nextjs` | `@supabase/ssr` + `@supabase/supabase-js` | 🟡 Step 3 in progress: real session hook, own sign-in screen |
+| `middleware.ts` | `proxy.ts` | ✅ Renamed. 🟡 Supabase session refresh and route gating in Step 3 |
+| `socket.io-client` | (removed) | ⬜ Still installed, unused; remove with matchmaking |
+| Fake queue (`setTimeout`) | `match_join` RPC + Realtime | 🟡 Queue now matches with the demo bot; real pairing in Step 5 |
+| Token route accepts any room | Token route checks `sessions` for the user | ⬜ Step 5 |
+| `lib/mockData.ts` | Supabase queries | ⬜ Step 4 |
+| `livekit-client` (transitive) | Add explicitly to `package.json` | ✅ Done |
+| Google Fonts `<link>` | `next/font` | ✅ Done (Manrope + Caveat) |
+| shadcn/ui | Restyled primitives | ⬜ Deferred: existing components cover current needs; add dialog/sheet pieces when needed |
 
 **Why not keep Clerk?** Clerk is excellent for standard login, but it has no anonymous users, and the no-signup first call is the most important growth lever borrowed from AirTalk. Running Clerk alongside Supabase also means syncing two user stores. Supabase gives auth, database, realtime and row-level security in one place, at lower cost at scale.
 
@@ -281,6 +366,16 @@ Client (/match)                    Supabase                         LiveKit
 - Waiting clients send a heartbeat every 5 s. A `pg_cron` job removes queue rows older than 20 s without a heartbeat.
 - Users who skipped or blocked each other are never re-paired (`blocks` table plus a "recent partners" check over the last 10 minutes).
 - **When to move to Redis:** if queue P95 latency goes above about 300 ms or concurrency passes a few thousand, move pairing to a small worker using Redis sorted sets. The client contract (`join`, then `session_id`) stays the same.
+
+### 6.3a Demo bot (built) and bot fallback (planned)
+
+Until real matchmaking exists, `/queue` matches you with a **demo bot** (`lib/demoBot.ts`):
+- It plays the role that complements yours (you pitch → it listens and asks founder questions; you give feedback → it pitches).
+- It speaks with the browser's speech synthesis, shows subtitles, listens with speech recognition (Chrome/Edge) and moves on after a pause, or after ~14 s where recognition isn't available.
+- It answers in-call chat with keyword-based replies.
+- It is always labelled "Demo bot · not a real person".
+
+**Recommendation for launch:** keep the bot as a fallback when no stranger is found within ~45 s, clearly labelled. It softens the cold-start problem when few people are online.
 
 ### 6.4 Data model changes (on top of `Backend-Schema-Document.md`)
 
@@ -493,15 +588,17 @@ Use manual `<AdSlot>` components with reserved heights first. Try Auto Ads only 
 
 ## 11. Build roadmap
 
-| Phase | Scope | Exit criteria |
-|---|---|---|
-| **1. Foundations** (≈1 wk) | Supabase project and schema migrations, replace Clerk with Supabase Auth (anonymous + Google + email OTP), rename to `proxy.ts`, design tokens and fonts, shadcn base components restyled | Build and lint pass. An anonymous user can be created and upgraded |
-| **2. Real matchmaking** (≈1.5 wk) | `match_join` / `match_widen` RPCs, Realtime notify, heartbeat cleanup, session-checked LiveKit token | Two people on different networks are matched and talk |
-| **3. Core app UI** (≈2 wk) | `/start`, `/match`, `/room` with Pitch Clock, `/wrap`, server-relayed moderated chat, report and block | An outside tester completes landing → call → wrap with no help |
-| **4. Marketing site** (≈2 wk, can overlap 2–3) | Landing, how-it-works, safety, FAQ, about, contact, legal, 11 topic pages, 3 tools, blog setup with the first 10 posts, sitemap and schema | Lighthouse SEO ≥ 95. All pages indexed in Search Console |
-| **5. Retention** (≈1 wk) | Contacts and messages, Pitch Notes, history, settings and data export | A returning user sees feedback history and messages a contact |
-| **6. Ads & launch** (≈1 wk + content runway) | CMP, AdSlot plus lint guardrail, `ads.txt`, AdSense application once content targets are met, first Pitch Night, Product Hunt launch | AdSense applied; launch day with a scheduled Pitch Night |
-| **7. Premium** (later) | Stripe or Razorpay, filters, unlimited rounds | Test payment unlocks premium immediately |
+| Phase | Scope | Exit criteria | Status (Oct 28) |
+|---|---|---|---|
+| **1. Foundations** (≈1 wk) | Supabase project and schema migrations, replace Clerk with Supabase Auth (anonymous + Google + email OTP), rename to `proxy.ts`, design tokens and fonts, shadcn base components restyled | Build and lint pass. An anonymous user can be created and upgraded | 🟡 ~50%: design system, fonts, `proxy.ts`, route groups done; Supabase Auth in progress; schema not started |
+| **2. Real matchmaking** (≈1.5 wk) | `match_join` / `match_widen` RPCs, Realtime notify, heartbeat cleanup, session-checked LiveKit token | Two people on different networks are matched and talk | ⬜ 0%: demo bot stands in |
+| **3. Core app UI** (≈2 wk) | `/start`, `/match`, `/room` with Pitch Clock, `/wrap`, server-relayed moderated chat, report and block | An outside tester completes landing → call → wrap with no help | 🟡 ~40%: all screens built and styled on sample data; roles/topics/idea card, Pitch Round, moderation still to do |
+| **4. Marketing site** (≈2 wk, can overlap 2–3) | Landing, how-it-works, safety, FAQ, about, contact, legal, 11 topic pages, 3 tools, blog setup with the first 10 posts, sitemap and schema | Lighthouse SEO ≥ 95. All pages indexed in Search Console | 🟡 ~30%: landing, FAQ + schema, 3 blog posts, terms, privacy |
+| **5. Retention** (≈1 wk) | Contacts and messages, Pitch Notes, history, settings and data export | A returning user sees feedback history and messages a contact | 🟡 ~15%: screens on sample data; Pitch Notes not built |
+| **6. Ads & launch** (≈1 wk + content runway) | CMP, AdSlot plus lint guardrail, `ads.txt`, AdSense application once content targets are met, first Pitch Night, Product Hunt launch | AdSense applied; launch day with a scheduled Pitch Night | 🟡 ~15%: sample ad slots; demo on Netlify; no CMP, guardrail lint rule or `ads.txt` yet |
+| **7. Premium** (later) | Stripe or Razorpay, filters, unlimited rounds | Test payment unlocks premium immediately | ⬜ 0% |
+
+**Order of the next steps:** Step 3 Supabase Auth → Step 4 database tables and real data → Step 5 real matchmaking (with bot fallback) → Step 6 roles/topics/idea card, Pitch Round, moderated chat, reports → Step 7 content, SEO and AdSense readiness.
 
 Content writing (blog, topics) should start in week 1 and run throughout. It is on the critical path for AdSense approval.
 
@@ -509,8 +606,10 @@ Content writing (blog, topics) should start in week 1 and run throughout. It is 
 
 ## 12. Open decisions
 
-1. **Domain and brand:** keep "PitchLine" or rename? Check domain and trademark availability before designing the logo.
-2. **Primary market and time zone:** affects Pitch Night times, payment provider (Stripe or Razorpay) and content language.
+1. **Domain and brand:** ✅ "PitchLine" for now. Still to do: check domain and trademark availability before launch.
+2. **Primary market and time zone:** ✅ India (IST). Pitch Nights at 9 PM IST; Razorpay is the likely payment provider.
 3. **Free-tier limits:** suggested start is unlimited random matches with 3 Pitch Rounds a day; tune after launch.
 4. **Country/language filters:** free or premium? Recommended: free, because they help liquidity in non-English markets.
-5. **Subdomain split** (`app.pitchline…` as AirTalk does) **or one domain with route groups?** Recommended: one domain with `(marketing)` and `(app)` route groups. It's simpler for auth cookies and keeps all SEO authority on one domain.
+5. **Subdomain split** (`app.pitchline…` as AirTalk does) **or one domain with route groups?** ✅ One domain with `(marketing)` and `(app)` route groups (built).
+6. **Bot fallback at launch?** Recommended: yes, clearly labelled, after ~45 s without a match (§6.3a).
+7. **Theme:** ✅ Dark by default, light optional (§4.1).

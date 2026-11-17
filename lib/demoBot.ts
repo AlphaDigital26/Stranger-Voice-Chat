@@ -1,52 +1,39 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { IntentTag } from "@/lib/callStore";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 // ============================================================
-// Demo bot — stands in for a stranger until real matchmaking exists (Step 5).
-// Voice: browser SpeechSynthesis to talk, SpeechRecognition (Chrome/Edge) to
-// hear when you've finished speaking. Without recognition it moves on by timer.
-// Always presented to the user as a bot, never as a real person.
+// Demo bot — a practice partner offered when nobody is on your tag (or before
+// matching is set up). Voice: browser SpeechSynthesis to talk, SpeechRecognition
+// (Chrome/Edge) to hear when you've finished speaking; without recognition it
+// moves on by timer. Always presented to the user as a bot, never as a person.
 // ============================================================
 
-/** The bot plays the role that complements yours (you pitch → it listens, etc.) */
-export function botIntentFor(mine: IntentTag | null): IntentTag {
-  if (mine === "pitch_idea") return "give_feedback";
-  if (mine === "give_feedback") return "pitch_idea";
-  return mine ?? "open_discussion";
+/**
+ * "bot": practice partner that says it's a bot.
+ * "stranger": demo mode, plays a person on the same tag (the screen shows a demo badge).
+ */
+export type BotPersona = "bot" | "stranger";
+
+/** One conversation, about whatever tag the person picked */
+function scriptFor(tagLabel: string, persona: BotPersona) {
+  if (persona === "stranger") {
+    return [
+      `Hey! Nice, someone else on ${tagLabel}. I've been into it for a couple of years now. What brings you here?`,
+      "Oh nice. What are you working on in that space at the moment?",
+      "Honestly, the hardest part for me has been finding the right people to talk to. What's been tough for you lately?",
+      "That makes sense. If you could ask someone with ten years in this field one question, what would it be?",
+      `This was a really good chat! Tap Friend if you want to stay in touch. Good luck with ${tagLabel}!`,
+    ];
+  }
+  return [
+    `Hey! I'm the Stranger Voice Chat demo bot, standing in while nobody else is on ${tagLabel}. What brings you to ${tagLabel}?`,
+    "Interesting. What are you working on in that space right now?",
+    "What's the hardest part of it this month?",
+    "If you could ask someone with ten years in this field one question, what would it be?",
+    `Good chat! Try again in a bit, and you'll likely meet a real person on ${tagLabel}. Thanks for talking with me.`,
+  ];
 }
-
-// Keyed by YOUR intent
-const SCRIPTS: Record<IntentTag, string[]> = {
-  pitch_idea: [
-    "Hey! I'm the PitchLine demo bot, standing in for a real listener. Go ahead and pitch me your idea. You've got sixty seconds.",
-    "Okay, interesting. Who exactly has this problem, and how often do they run into it?",
-    "How are they solving it today, without you?",
-    "Who pays for this, and roughly how much would they pay?",
-    "What's the smallest version you could test this week?",
-    "Here's my honest take: talk to ten potential customers before you build anything. Thanks for pitching!",
-  ],
-  give_feedback: [
-    "Hi! I'm the PitchLine demo bot, playing a founder. Here's my pitch: a weekly box of healthy snacks for college students, for two hundred rupees a week. What do you think?",
-    "Fair point. Who do you think would actually pay, the students or their parents?",
-    "Hmm. What would make you trust a brand like this enough to subscribe?",
-    "That's useful. If I had to cut one thing to launch faster, what should it be?",
-    "Thanks, this really helps. I'm going to talk to some students this week!",
-  ],
-  open_discussion: [
-    "Hey! I'm the PitchLine demo bot. What's a startup trend you've been thinking about lately?",
-    "Interesting. Do you think that's a real shift, or mostly hype?",
-    "What would a small team need to win in that space?",
-    "Good chat! Thanks for talking with me.",
-  ],
-  founder_chat: [
-    "Hey, fellow builder! I'm the PitchLine demo bot. What are you working on right now?",
-    "Nice. What's the hardest part of it this week?",
-    "How are you finding your first users?",
-    "Love it. Keep shipping, and thanks for the chat!",
-  ],
-};
 
 const GENERIC_CHAT = [
   "Got it. What made you think of this?",
@@ -56,9 +43,15 @@ const GENERIC_CHAT = [
 ];
 
 /** Keyword-based reply to an in-call chat message */
-export function botChatReply(body: string, turn: number): string {
+export function botChatReply(body: string, turn: number, persona: BotPersona = "bot"): string {
   const t = body.toLowerCase();
-  if (/\b(hi|hello|hey|namaste|yo)\b/.test(t)) return "Hey! Good to meet you. I'm the demo bot.";
+  if (persona === "stranger") {
+    if (/\b(hi|hello|hey|namaste|yo)\b/.test(t)) return "Hey! Good to meet you 👋";
+    if (/(bot|real|human|person|demo)/.test(t))
+      return "Ha, good catch: this is demo mode, so I'm simulated. With matching switched on you'd be talking to a real person on this tag.";
+  } else if (/\b(hi|hello|hey|namaste|yo)\b/.test(t)) {
+    return "Hey! Good to meet you. I'm the demo bot.";
+  }
   if (/(thank|thx|ty\b)/.test(t)) return "Anytime! Good luck with it.";
   if (/(price|pricing|pay|cost|₹|\$|money|revenue|charge)/.test(t))
     return "Pricing is the big question. Have you asked ten people what they'd actually pay?";
@@ -67,7 +60,7 @@ export function botChatReply(body: string, turn: number): string {
   if (/(user|customer|market|audience|buyer)/.test(t))
     return "Who's the very first customer you'd sell to? Be as specific as you can.";
   if (/(bot|real|human|person)/.test(t))
-    return "Yep, I'm a demo bot! Real strangers are coming soon.";
+    return "Yep, I'm a demo bot! Retry in a bit to meet a real person on your tag.";
   if (t.trim().endsWith("?"))
     return "Good question. I'd test it with a quick landing page and see who signs up.";
   return GENERIC_CHAT[turn % GENERIC_CHAT.length];
@@ -97,15 +90,17 @@ function getRecognitionCtor(): RecognitionCtor | null {
 export type BotPhase = "connecting" | "speaking" | "listening" | "blocked" | "done";
 
 interface UseDemoBotOptions {
-  myIntent: IntentTag | null;
+  /** Label of the tag the person picked, e.g. "Textile" */
+  tagLabel: string;
   isMuted: boolean;
+  persona?: BotPersona;
 }
 
 const SILENCE_MS = 1800;       // pause after your speech that counts as "your turn is over"
 const LISTEN_FALLBACK_MS = 14000; // move on anyway if we can't hear you
 
-export function useDemoBot({ myIntent, isMuted }: UseDemoBotOptions) {
-  const script = SCRIPTS[myIntent ?? "open_discussion"];
+export function useDemoBot({ tagLabel, isMuted, persona = "bot" }: UseDemoBotOptions) {
+  const script = useMemo(() => scriptFor(tagLabel, persona), [tagLabel, persona]);
 
   const [phase, setPhase] = useState<BotPhase>("connecting");
   const [caption, setCaption] = useState("");

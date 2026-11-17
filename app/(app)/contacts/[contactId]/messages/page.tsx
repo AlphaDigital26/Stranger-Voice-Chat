@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Send } from "lucide-react";
 import { MOCK_CONTACTS, MOCK_MESSAGES, getStrangerName } from "@/lib/mockData";
-import { useAuth } from "@/lib/mockAuth";
+import { useAuth } from "@/lib/auth";
 
 // NO AD SLOTS on this screen — private communications per AdSense policy
 // UIUX Brief §12a: "never inside it or on the messaging thread screen"
@@ -66,7 +66,7 @@ export default function MessagesPage() {
         </span>
         <div>
           <p className="text-[16px] font-bold">{name}</p>
-          <p className="text-[12px] text-muted">PitchLine contact</p>
+          <p className="text-[12px] text-muted">Friend</p>
         </div>
       </div>
 

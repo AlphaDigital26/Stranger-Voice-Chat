@@ -31,8 +31,8 @@ export interface MockContact {
 
 export interface MockSession {
   id: string;
-  myIntentTag: string;
-  matchIntentTag: string;
+  /** Tag slug both people picked (lib/tags.ts) */
+  tag: string;
   startedAt: string;
   endedAt: string;
   durationSeconds: number;
@@ -70,8 +70,7 @@ export const MOCK_CONTACTS: MockContact[] = [
 export const MOCK_SESSIONS: MockSession[] = [
   {
     id: "sess_001",
-    myIntentTag: "Pitch My Idea",
-    matchIntentTag: "Give Feedback",
+    tag: "textile",
     startedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
     endedAt: new Date(Date.now() - 3600000 * 2 + 1000 * 312).toISOString(),
     durationSeconds: 312,
@@ -80,8 +79,7 @@ export const MOCK_SESSIONS: MockSession[] = [
   },
   {
     id: "sess_002",
-    myIntentTag: "Open Discussion",
-    matchIntentTag: "Founder Chat",
+    tag: "saas",
     startedAt: new Date(Date.now() - 86400000).toISOString(),
     endedAt: new Date(Date.now() - 86400000 + 1000 * 540).toISOString(),
     durationSeconds: 540,
@@ -90,8 +88,7 @@ export const MOCK_SESSIONS: MockSession[] = [
   },
   {
     id: "sess_003",
-    myIntentTag: "Give Feedback",
-    matchIntentTag: "Pitch My Idea",
+    tag: "startup-ideas",
     startedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
     endedAt: new Date(Date.now() - 86400000 * 2 + 1000 * 18).toISOString(),
     durationSeconds: 18,
@@ -100,8 +97,7 @@ export const MOCK_SESSIONS: MockSession[] = [
   },
   {
     id: "sess_004",
-    myIntentTag: "Pitch My Idea",
-    matchIntentTag: "Give Feedback",
+    tag: "real-estate",
     startedAt: new Date(Date.now() - 86400000 * 5).toISOString(),
     endedAt: new Date(Date.now() - 86400000 * 5 + 1000 * 720).toISOString(),
     durationSeconds: 720,
@@ -110,8 +106,7 @@ export const MOCK_SESSIONS: MockSession[] = [
   },
   {
     id: "sess_005",
-    myIntentTag: "Founder Chat",
-    matchIntentTag: "Founder Chat",
+    tag: "agriculture",
     startedAt: new Date(Date.now() - 86400000 * 7).toISOString(),
     endedAt: new Date(Date.now() - 86400000 * 7 + 1000 * 425).toISOString(),
     durationSeconds: 425,
@@ -120,8 +115,7 @@ export const MOCK_SESSIONS: MockSession[] = [
   },
   {
     id: "sess_006",
-    myIntentTag: "Pitch My Idea",
-    matchIntentTag: "Give Feedback",
+    tag: "e-commerce",
     startedAt: new Date(Date.now() - 86400000 * 9).toISOString(),
     endedAt: new Date(Date.now() - 86400000 * 9 + 1000 * 96).toISOString(),
     durationSeconds: 96,
@@ -130,8 +124,7 @@ export const MOCK_SESSIONS: MockSession[] = [
   },
   {
     id: "sess_007",
-    myIntentTag: "Give Feedback",
-    matchIntentTag: "Pitch My Idea",
+    tag: "stock-market",
     startedAt: new Date(Date.now() - 86400000 * 12).toISOString(),
     endedAt: new Date(Date.now() - 86400000 * 12 + 1000 * 263).toISOString(),
     durationSeconds: 263,
@@ -140,8 +133,7 @@ export const MOCK_SESSIONS: MockSession[] = [
   },
   {
     id: "sess_008",
-    myIntentTag: "Open Discussion",
-    matchIntentTag: "Open Discussion",
+    tag: "ai-and-ml",
     startedAt: new Date(Date.now() - 86400000 * 15).toISOString(),
     endedAt: new Date(Date.now() - 86400000 * 15 + 1000 * 41).toISOString(),
     durationSeconds: 41,
@@ -150,8 +142,7 @@ export const MOCK_SESSIONS: MockSession[] = [
   },
   {
     id: "sess_009",
-    myIntentTag: "Pitch My Idea",
-    matchIntentTag: "Give Feedback",
+    tag: "textile",
     startedAt: new Date(Date.now() - 86400000 * 19).toISOString(),
     endedAt: new Date(Date.now() - 86400000 * 19 + 1000 * 610).toISOString(),
     durationSeconds: 610,
@@ -160,8 +151,7 @@ export const MOCK_SESSIONS: MockSession[] = [
   },
   {
     id: "sess_010",
-    myIntentTag: "Founder Chat",
-    matchIntentTag: "Founder Chat",
+    tag: "job-hunting",
     startedAt: new Date(Date.now() - 86400000 * 24).toISOString(),
     endedAt: new Date(Date.now() - 86400000 * 24 + 1000 * 180).toISOString(),
     durationSeconds: 180,
@@ -215,9 +205,3 @@ export function formatCallDate(iso: string): string {
   });
 }
 
-export const INTENT_LABELS: Record<string, string> = {
-  pitch_idea: "Pitch My Idea",
-  give_feedback: "Give Feedback",
-  open_discussion: "Open Discussion",
-  founder_chat: "Founder Chat",
-};

@@ -30,8 +30,8 @@ export function CallMockup() {
       </div>
 
       <div className="mt-5 self-center bg-note-yellow shadow-note px-4 py-2.5 -rotate-2 text-center">
-        <p className="text-[10px] font-bold text-ink/70">Stranger wants to</p>
-        <p className="font-hand font-bold text-[22px] leading-none">Pitch my idea</p>
+        <p className="text-[10px] font-bold text-ink/70">You&apos;re both on</p>
+        <p className="font-hand font-bold text-[24px] leading-none">#Textile</p>
       </div>
 
       <div className="mt-6 flex items-center justify-center gap-1">
@@ -55,7 +55,7 @@ export function CallMockup() {
         {[
           { Icon: Mic, label: "Mute" },
           { Icon: MessageSquare, label: "Chat" },
-          { Icon: UserPlus, label: "Contact" },
+          { Icon: UserPlus, label: "Friend" },
           { Icon: SkipForward, label: "Skip" },
         ].map(({ Icon, label }) => (
           <span key={label} className="flex flex-col items-center gap-0.5 py-2 rounded-[10px] border-2 border-outline bg-surface text-[9px] font-bold">
@@ -69,10 +69,10 @@ export function CallMockup() {
 }
 
 const CHAT: Array<{ own: boolean; text: string }> = [
-  { own: false, text: "So who pays, the dog owner or the walker?" },
-  { own: true, text: "Owners, ₹99 a walk. Walkers keep 80%." },
-  { own: false, text: "Have you asked 10 owners if they'd pay that?" },
-  { own: true, text: "Not yet… adding it to my list!" },
+  { own: false, text: "Which mill do you buy cotton yarn from?" },
+  { own: true, text: "A co-op near Coimbatore. Want their number?" },
+  { own: false, text: "Yes please! Prices in Surat went up 12% this month." },
+  { own: true, text: "Adding you as a friend, I'll send it after the call." },
 ];
 
 export function ChatMockup() {

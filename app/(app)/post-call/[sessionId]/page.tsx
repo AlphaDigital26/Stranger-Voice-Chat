@@ -12,12 +12,13 @@ import { useCallStore } from "@/lib/callStore";
 import { formatDuration } from "@/lib/mockData";
 import { useToast } from "@/components/ui/Toast";
 import { SparkleDoodle } from "@/components/doodles/Doodles";
+import { getTag } from "@/lib/tags";
 
 export default function PostCallPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isReported = searchParams.get("reported") === "true";
-  const { currentSession, contactAdded, sendContactRequest, confirmContactAdded, resetToIdle } = useCallStore();
+  const { currentSession, selectedTag, contactAdded, sendContactRequest, confirmContactAdded, resetToIdle } = useCallStore();
   const { toast } = useToast();
 
   const [feedbackGiven, setFeedbackGiven] = useState<"up" | "down" | null>(null);
@@ -52,13 +53,15 @@ export default function PostCallPage() {
     setTimeout(() => {
       confirmContactAdded();
       setLocalContactDone(true);
-      toast("You're now connected with Stranger #4821", "success");
+      toast("Stranger #4821 is now your friend", "success");
     }, 1200);
   };
 
+  // Same tag again, straight back into the queue
+  const tag = getTag(currentSession?.tag ?? selectedTag);
   const handleTalkNew = () => {
     resetToIdle();
-    router.push("/intent");
+    router.push(tag ? "/queue" : "/intent");
   };
 
   return (
@@ -95,7 +98,7 @@ export default function PostCallPage() {
               </span>
               <div className="flex-1">
                 <p className="text-[15px] font-bold">Stay in touch?</p>
-                <p className="text-[13px] text-muted">Add Stranger #4821 as a contact.</p>
+                <p className="text-[13px] text-muted">Add Stranger #4821 as a friend.</p>
               </div>
               <Button variant="secondary" size="sm" onClick={handleAddContact} id="post-call-add-contact">
                 Add
@@ -105,7 +108,7 @@ export default function PostCallPage() {
           {localContactDone && !isReported && (
             <div className="flex items-center gap-2 px-4 py-3 bg-live-soft border-2 border-live rounded-[12px]">
               <CheckCircle size={18} className="text-live" />
-              <p className="text-[14px] text-live font-bold">Connected with Stranger #4821</p>
+              <p className="text-[14px] text-live font-bold">Stranger #4821 is now your friend</p>
             </div>
           )}
 
@@ -146,10 +149,10 @@ export default function PostCallPage() {
           {/* Primary actions */}
           <div className="flex flex-col gap-2">
             <Button variant="primary" size="lg" onClick={handleTalkNew} className="w-full" id="talk-someone-new-btn">
-              Talk to someone new <ArrowRight size={18} />
+              {tag ? `Next person on #${tag.label}` : "Talk to someone new"} <ArrowRight size={18} />
             </Button>
-            <Button variant="secondary" size="lg" onClick={() => router.push("/intent")} className="w-full" id="go-home-btn">
-              Done for now
+            <Button variant="secondary" size="lg" onClick={() => router.push("/intent")} className="w-full" id="change-tag-btn">
+              Choose another tag
             </Button>
           </div>
 
@@ -159,7 +162,7 @@ export default function PostCallPage() {
               <MessageSquare size={15} /> Call history
             </Link>
             <Link href="/contacts" className="flex items-center gap-1.5 hover:text-primary transition-colors">
-              <UserPlus size={15} /> Contacts
+              <UserPlus size={15} /> Friends
             </Link>
           </div>
 

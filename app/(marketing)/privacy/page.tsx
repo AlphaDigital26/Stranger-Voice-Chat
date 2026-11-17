@@ -2,8 +2,8 @@ import TopNav from "@/components/layout/TopNav";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — PitchLine",
-  description: "Privacy Policy detailing data collection, retention, and usage for PitchLine.",
+  title: "Privacy Policy — Stranger Voice Chat",
+  description: "Privacy Policy detailing data collection, retention, and usage for Stranger Voice Chat.",
 };
 
 export default function PrivacyPage() {
@@ -20,14 +20,14 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-[1.25rem] font-extrabold tracking-tight mb-3">1. Information We Collect</h2>
             <p>
-              When you use PitchLine, we collect information you provide directly, such as your email address when signing up, and your payment information if you subscribe to a paid tier. We also collect usage data, connection metadata, and IP addresses for security and matching purposes.
+              Stranger Voice Chat has no accounts: we never ask for your name, email or phone number. When you start your first call, we create an anonymous ID for your device. We store that ID with your 18+ confirmation, the tag you pick, any country or language preference, and call times, so we can match you and keep the service safe. We also collect connection metadata and IP addresses for security and abuse prevention.
             </p>
           </section>
 
           <section>
             <h2 className="text-[1.25rem] font-extrabold tracking-tight mb-3">2. Audio Privacy (No Recording)</h2>
             <p>
-              <strong>PitchLine does NOT record, capture, or store the audio of your live conversations.</strong> Audio streams are transmitted directly between peers or via our ephemeral signaling servers and are immediately discarded. We have no ability to retrieve audio from past sessions.
+              <strong>Stranger Voice Chat does NOT record, capture, or store the audio of your live conversations.</strong> Audio streams are transmitted directly between peers or via our ephemeral signaling servers and are immediately discarded. We have no ability to retrieve audio from past sessions.
             </p>
           </section>
 
@@ -43,8 +43,8 @@ export default function PrivacyPage() {
             <h2 className="text-[1.25rem] font-extrabold tracking-tight mb-3">4. Third-Party Services</h2>
             <p className="mb-3">We use trusted third-party service providers to operate the Service:</p>
             <ul className="list-disc pl-5 space-y-2">
-              <li><strong>Authentication:</strong> We use Clerk to securely manage your account and login credentials.</li>
-              <li><strong>Payments:</strong> We use Stripe to process payments. We do not store your full credit card details.</li>
+              <li><strong>Matching and data:</strong> We use Supabase to create your anonymous device ID and to match you with someone on the same tag.</li>
+              <li><strong>Voice:</strong> We use LiveKit to carry the live audio between the two people on a call. Audio is not recorded.</li>
               <li><strong>Advertising:</strong> We use Google AdSense to serve ads on select pages (ads are never shown during live calls). AdSense may use cookies to personalize ads based on your browsing behavior.</li>
             </ul>
           </section>
@@ -52,7 +52,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-[1.25rem] font-extrabold tracking-tight mb-3">5. Your Rights</h2>
             <p>
-              You have the right to access, export, or delete your personal data. You can request account deletion from your settings dashboard. Upon deletion, your identifying information will be soft-deleted and permanently purged after our 30-day retention window expires.
+              You can remove the link between your device and its anonymous ID at any time with Settings → Forget this device. Data tied to that ID is permanently deleted after our 30-day retention window. Because we don&apos;t know who you are, we can only act on requests made from the device itself.
             </p>
           </section>
         </div>

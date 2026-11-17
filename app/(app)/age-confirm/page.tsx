@@ -6,25 +6,31 @@ import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Logo from "@/components/ui/Logo";
-import { useAuth } from "@/lib/mockAuth";
+import { useAuth } from "@/lib/auth";
+import { useToast } from "@/components/ui/Toast";
 
 export default function AgeConfirmPage() {
   const router = useRouter();
-  const { confirmAge, signOut } = useAuth();
+  const { ensureSession, confirmAge, resetIdentity } = useAuth();
+  const { toast } = useToast();
   const [checked, setChecked] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleContinue = async () => {
     setLoading(true);
-    await new Promise(r => setTimeout(r, 500));
-    confirmAge();
-    setLoading(false);
-    router.push("/intent");
+    try {
+      await ensureSession();
+      await confirmAge();
+      router.push("/intent");
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "We couldn't save that. Please try again.", "error");
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-dots flex flex-col items-center justify-center px-4 py-12">
-      <Link href="/" className="mb-8" aria-label="PitchLine home">
+      <Link href="/" className="mb-8" aria-label="Stranger Voice Chat home">
         <Logo />
       </Link>
 
@@ -36,7 +42,7 @@ export default function AgeConfirmPage() {
 
         <h1 className="mt-6 text-[1.5rem] font-extrabold tracking-tight mb-2">Confirm your age</h1>
         <p className="text-[15px] text-muted mb-6 leading-relaxed">
-          PitchLine is for users <strong>18 and older</strong>. Since you&apos;re connecting with strangers by voice, we need to confirm your age before you continue.
+          Stranger Voice Chat is for users <strong>18 and older</strong>. Since you&apos;re connecting with strangers by voice, we need to confirm your age before you continue.
         </p>
 
         <label className="flex items-start gap-3 cursor-pointer text-left mb-6 p-3 border-2 border-line rounded-[12px] hover:border-outline transition-colors" htmlFor="age-confirm-check">
@@ -68,10 +74,10 @@ export default function AgeConfirmPage() {
         </Button>
 
         <button
-          onClick={() => { signOut(); router.push("/"); }}
+          onClick={() => { resetIdentity(); router.push("/"); }}
           className="min-h-[44px] text-[14px] font-bold text-muted hover:text-ink transition-colors"
         >
-          I&apos;m under 18, log me out
+          I&apos;m under 18, take me back
         </button>
       </div>
     </div>
