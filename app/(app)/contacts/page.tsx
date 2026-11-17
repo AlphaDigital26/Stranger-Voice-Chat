@@ -16,9 +16,9 @@ export default function ContactsPage() {
 
       <main className="flex-1 container-app max-w-[680px] py-10">
         <span className="font-hand text-[26px] text-marker">people you clicked with</span>
-        <h1 className="mt-1 text-[2.25rem] font-extrabold tracking-tight leading-tight">Contacts</h1>
+        <h1 className="mt-1 text-[2.25rem] font-extrabold tracking-tight leading-tight">Friends</h1>
         <p className="mt-1 text-[15px] text-muted">
-          {contacts.length} connection{contacts.length !== 1 ? "s" : ""}
+          {contacts.length} friend{contacts.length !== 1 ? "s" : ""} · saved on this device
         </p>
 
         {contacts.length === 0 ? (
@@ -26,9 +26,9 @@ export default function ContactsPage() {
           <div className="mt-10 flex flex-col items-center gap-5 py-12 text-center">
             <div className="bg-note-yellow shadow-note px-7 py-6 -rotate-2">
               <PeopleDoodle size={44} draw className="mx-auto" />
-              <p className="mt-2 font-hand font-bold text-[28px] leading-none">no contacts yet</p>
+              <p className="mt-2 font-hand font-bold text-[28px] leading-none">no friends yet</p>
             </div>
-            <p className="text-[15px] text-muted max-w-[300px]">After a great conversation, tap “Contact” to stay in touch.</p>
+            <p className="text-[15px] text-muted max-w-[300px]">After a great conversation, tap “Friend” to stay in touch.</p>
             <Link
               href="/intent"
               className="px-6 py-3 text-[15px] font-bold text-on-primary bg-primary hover:bg-primary-hover rounded-[12px] transition-colors"

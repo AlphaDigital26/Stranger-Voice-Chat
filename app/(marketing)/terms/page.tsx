@@ -2,8 +2,8 @@ import TopNav from "@/components/layout/TopNav";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — PitchLine",
-  description: "Terms of Service and User Agreement for PitchLine.",
+  title: "Terms of Service — Stranger Voice Chat",
+  description: "Terms of Service and User Agreement for Stranger Voice Chat.",
 };
 
 export default function TermsPage() {
@@ -20,21 +20,21 @@ export default function TermsPage() {
           <section>
             <h2 className="text-[1.25rem] font-extrabold tracking-tight mb-3">1. Acceptance of Terms</h2>
             <p>
-              By accessing or using PitchLine (&quot;the Service&quot;), you agree to be bound by these Terms of Service. If you do not agree to these terms, do not use the Service.
+              By accessing or using Stranger Voice Chat (&quot;the Service&quot;), you agree to be bound by these Terms of Service. If you do not agree to these terms, do not use the Service.
             </p>
           </section>
 
           <section>
             <h2 className="text-[1.25rem] font-extrabold tracking-tight mb-3">2. Eligibility and Age Requirements</h2>
             <p>
-              You must be at least 18 years old to use PitchLine. By using the Service, you represent and warrant that you are 18 or older. We reserve the right to suspend or terminate your account if we determine you have violated this requirement.
+              You must be at least 18 years old to use Stranger Voice Chat. By using the Service, you represent and warrant that you are 18 or older. We reserve the right to suspend or terminate your account if we determine you have violated this requirement.
             </p>
           </section>
 
           <section>
             <h2 className="text-[1.25rem] font-extrabold tracking-tight mb-3">3. User Conduct and Interactions</h2>
             <p className="mb-3">
-              PitchLine connects you with strangers for anonymous voice conversations. You agree to use the Service respectfully and constructively. You must not:
+              Stranger Voice Chat connects you with strangers for anonymous voice conversations. You agree to use the Service respectfully and constructively. You must not:
             </p>
             <ul className="list-disc pl-5 space-y-2">
               <li>Engage in harassment, hate speech, threats, or abusive behavior.</li>
@@ -50,7 +50,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-[1.25rem] font-extrabold tracking-tight mb-3">4. Disclaimer of Liability</h2>
             <p>
-              PitchLine acts solely as a matching platform. We do not endorse, verify, or guarantee the accuracy of any feedback, advice, or statements made by other users. You interact with strangers at your own risk. PitchLine and its operators shall not be held liable for any damages, losses, or disputes arising from your interactions on the Service.
+              Stranger Voice Chat acts solely as a matching platform. We do not endorse, verify, or guarantee the accuracy of any feedback, advice, or statements made by other users. You interact with strangers at your own risk. Stranger Voice Chat and its operators shall not be held liable for any damages, losses, or disputes arising from your interactions on the Service.
             </p>
           </section>
 

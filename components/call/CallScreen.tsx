@@ -8,8 +8,8 @@ import ControlBar from "@/components/call/ControlBar";
 import TextChatPanel from "@/components/call/TextChatPanel";
 import ReportModal from "@/components/call/ReportModal";
 import { useCallStore } from "@/lib/callStore";
-import { INTENT_TAGS } from "@/components/intent/IntentCard";
-import { useAuth } from "@/lib/mockAuth";
+import { getTag, tagNote } from "@/lib/tags";
+import { useAuth } from "@/lib/auth";
 import { SoundWavesDoodle } from "@/components/doodles/Doodles";
 
 interface CallScreenProps {
@@ -29,6 +29,8 @@ interface CallScreenProps {
   extra?: React.ReactNode;
   /** Called after you send a chat message (the bot uses it to reply) */
   onSendMessage?: (body: string) => void;
+  /** Called when you hang up, skip or report (real calls mark the call as ended) */
+  onEnd?: () => void;
 }
 
 export default function CallScreen({
@@ -42,6 +44,7 @@ export default function CallScreen({
   caption,
   extra,
   onSendMessage,
+  onEnd,
 }: CallScreenProps) {
   const router = useRouter();
   const { user } = useAuth();
@@ -65,17 +68,19 @@ export default function CallScreen({
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [isConnected]);
 
-  const matchIntent =
-    INTENT_TAGS.find(t => t.slug === currentSession?.matchIntentTag) ?? INTENT_TAGS[2];
+  const tag = getTag(currentSession?.tag);
 
   const handleHangUp = () => {
     if (timerRef.current) clearInterval(timerRef.current);
+    onEnd?.();
     hangUp();
     router.push(`/post-call/${sessionId}`);
   };
 
+  // Skip: straight back into the queue on the same tag
   const handleSkip = () => {
     if (timerRef.current) clearInterval(timerRef.current);
+    onEnd?.();
     skip();
     router.push("/queue");
   };
@@ -86,6 +91,7 @@ export default function CallScreen({
     await new Promise(r => setTimeout(r, 1000));
     setReportSubmitting(false);
     setReportOpen(false);
+    onEnd?.();
     endCall("report");
     router.push(`/post-call/${sessionId}?reported=true`);
   };
@@ -135,11 +141,11 @@ export default function CallScreen({
       <div className="flex-1 flex flex-col items-center justify-center gap-5 pt-4 pb-[190px] px-4">
         {/* Who you're talking to */}
         <div
-          className={clsx(matchIntent.note, "shadow-note px-6 py-4 note-tilt anim-note-drop max-w-[300px] text-center")}
+          className={clsx(tagNote(tag?.slug), "shadow-note px-6 py-4 note-tilt anim-note-drop max-w-[300px] text-center")}
           style={{ "--tilt": "-2deg" } as React.CSSProperties}
         >
-          <p className="text-[13px] font-bold text-ink/70">{peerName} wants to</p>
-          <p className="font-hand font-bold text-[30px] leading-none mt-1">{matchIntent.label}</p>
+          <p className="text-[13px] font-bold text-ink/70">You and {peerName === "Stranger" ? "a stranger" : "the demo bot"} are both on</p>
+          <p className="font-hand font-bold text-[32px] leading-none mt-1">#{tag?.label ?? "your tag"}</p>
         </div>
 
         <div className="flex items-center gap-1">

@@ -6,7 +6,6 @@ import { create } from "zustand";
 // ============================================================
 
 export type CallState = "idle" | "queued" | "connecting" | "in_call" | "post_call";
-export type IntentTag = "pitch_idea" | "give_feedback" | "open_discussion" | "founder_chat";
 export type EndReason = "hangup" | "skip" | "report" | "drop" | "timeout";
 
 export interface TextMessage {
@@ -19,8 +18,8 @@ export interface TextMessage {
 
 export interface CallSession {
   sessionId: string;
-  myIntentTag: IntentTag;
-  matchIntentTag: IntentTag;
+  /** Tag slug both people chose (see lib/tags.ts) */
+  tag: string;
   startedAt: string;
   endedAt?: string;
   durationSeconds?: number;
@@ -29,7 +28,8 @@ export interface CallSession {
 
 interface CallStore {
   callState: CallState;
-  selectedIntent: IntentTag | null;
+  /** Tag slug chosen on /intent; people are only matched on the same tag */
+  selectedTag: string | null;
   countryFilter: string | null;
   languageFilter: string | null;
   currentSession: CallSession | null;
@@ -42,12 +42,12 @@ interface CallStore {
   queueElapsed: number;
 
   // Actions
-  setIntent: (tag: IntentTag) => void;
+  setTag: (slug: string) => void;
   setCountryFilter: (val: string | null) => void;
   setLanguageFilter: (val: string | null) => void;
   joinQueue: () => void;
   cancelQueue: () => void;
-  matchFound: (sessionId: string, matchTag: IntentTag) => void;
+  matchFound: (sessionId: string, tag: string) => void;
   connectionEstablished: () => void;
   hangUp: () => void;
   skip: () => void;
@@ -64,7 +64,7 @@ interface CallStore {
 
 export const useCallStore = create<CallStore>((set, get) => ({
   callState: "idle",
-  selectedIntent: null,
+  selectedTag: null,
   countryFilter: null,
   languageFilter: null,
   currentSession: null,
@@ -76,7 +76,7 @@ export const useCallStore = create<CallStore>((set, get) => ({
   contactAdded: false,
   queueElapsed: 0,
 
-  setIntent: (tag) => set({ selectedIntent: tag }),
+  setTag: (slug) => set({ selectedTag: slug }),
   setCountryFilter: (val) => set({ countryFilter: val }),
   setLanguageFilter: (val) => set({ languageFilter: val }),
 
@@ -84,16 +84,15 @@ export const useCallStore = create<CallStore>((set, get) => ({
 
   cancelQueue: () => set({ callState: "idle" }),
 
-  matchFound: (sessionId, matchTag) =>
-    set((s) => ({
+  matchFound: (sessionId, tag) =>
+    set({
       callState: "connecting",
       currentSession: {
         sessionId,
-        myIntentTag: s.selectedIntent!,
-        matchIntentTag: matchTag,
+        tag,
         startedAt: new Date().toISOString(),
       },
-    })),
+    }),
 
   connectionEstablished: () => set({ callState: "in_call" }),
 

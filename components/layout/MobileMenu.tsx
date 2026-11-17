@@ -6,7 +6,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { clsx } from "clsx";
-import { SignInButton, SignUpButton } from "@clerk/nextjs";
 
 export interface MenuLink {
   href: string;
@@ -15,7 +14,6 @@ export interface MenuLink {
 
 interface MobileMenuProps {
   links: MenuLink[];
-  signedIn: boolean;
   /** Tailwind breakpoint class that hides the button on wider screens, e.g. "sm:hidden" */
   hideFrom?: string;
   /** Header height, so the panel opens right under it: "top-16" (app nav) or "top-[72px]" (landing) */
@@ -23,7 +21,7 @@ interface MobileMenuProps {
 }
 
 // Hamburger + full-width panel under the header, for phones.
-export default function MobileMenu({ links, signedIn, hideFrom = "sm:hidden", top = "top-16" }: MobileMenuProps) {
+export default function MobileMenu({ links, hideFrom = "sm:hidden", top = "top-16" }: MobileMenuProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const panelId = useId();
@@ -89,20 +87,11 @@ export default function MobileMenu({ links, signedIn, hideFrom = "sm:hidden", to
               })}
             </ul>
 
-            {!signedIn && (
-              <div className="mt-3 pt-4 border-t-2 border-dashed border-line grid grid-cols-2 gap-3">
-                <SignInButton mode="modal">
-                  <button onClick={close} className="min-h-[48px] rounded-[12px] border-2 border-outline bg-surface text-[16px] font-bold hover:bg-paper-2 transition-colors">
-                    Log in
-                  </button>
-                </SignInButton>
-                <SignUpButton mode="modal">
-                  <button onClick={close} className="min-h-[48px] rounded-[12px] bg-primary text-on-primary text-[16px] font-bold hover:bg-primary-hover transition-colors">
-                    Get started
-                  </button>
-                </SignUpButton>
-              </div>
-            )}
+            <div className="mt-3 pt-4 border-t-2 border-dashed border-line">
+              <Link href="/intent" onClick={close} className="flex items-center justify-center min-h-[52px] rounded-[12px] bg-primary text-on-primary text-[17px] font-bold hover:bg-primary-hover transition-colors">
+                Pick a tag &amp; start talking
+              </Link>
+            </div>
           </nav>
         </>,
         document.body

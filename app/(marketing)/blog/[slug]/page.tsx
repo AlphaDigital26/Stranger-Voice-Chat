@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   if (!post) return { title: "Post Not Found" };
 
   return {
-    title: `${post.title} — PitchLine Blog`,
+    title: `${post.title} — Stranger Voice Chat Blog`,
     description: post.description,
   };
 }

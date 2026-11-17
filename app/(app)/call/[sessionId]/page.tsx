@@ -6,6 +6,9 @@ import CallScreen from "@/components/call/CallScreen";
 import { useCallStore } from "@/lib/callStore";
 import { useToast } from "@/components/ui/Toast";
 import { useDemoBot, botChatReply } from "@/lib/demoBot";
+import { endCall } from "@/lib/matching";
+import { getTag } from "@/lib/tags";
+import { DEMO_MODE } from "@/lib/demo";
 
 import {
   LiveKitRoom,
@@ -44,30 +47,34 @@ function LiveKitCall({ sessionId }: { sessionId: string }) {
       isWaiting={isConnected && !remoteParticipant}
       isSpeaking={isSpeaking}
       amplitude={amplitude}
+      onEnd={() => endCall(sessionId)}
     />
   );
 }
 
 // Demo call: the bot talks, listens and answers chat (no LiveKit room needed)
 function BotCall({ sessionId }: { sessionId: string }) {
-  const { selectedIntent, isMuted, receiveMessage } = useCallStore();
-  const bot = useDemoBot({ myIntent: selectedIntent, isMuted });
+  const { selectedTag, isMuted, receiveMessage } = useCallStore();
+  // Demo mode plays a stranger on your tag; otherwise it's the openly-labelled practice bot
+  const persona = DEMO_MODE ? "stranger" : "bot";
+  const who = DEMO_MODE ? "the stranger" : "the demo bot";
+  const bot = useDemoBot({ tagLabel: `#${getTag(selectedTag)?.label ?? "your tag"}`, isMuted, persona });
   const chatTurn = useRef(0);
 
   const handleSendMessage = (body: string) => {
-    const reply = botChatReply(body, chatTurn.current++);
+    const reply = botChatReply(body, chatTurn.current++, persona);
     setTimeout(() => receiveMessage(reply, "bot_demo"), 1100 + Math.random() * 900);
   };
 
   const status =
     bot.phase === "connecting"
-      ? "connecting you to the demo bot…"
+      ? `connecting you to ${who}…`
       : bot.phase === "speaking"
-      ? "demo bot is speaking…"
+      ? `${DEMO_MODE ? "stranger" : "demo bot"} is speaking…`
       : bot.phase === "blocked"
-      ? "your browser paused the bot's voice"
+      ? "your browser paused the call audio"
       : bot.phase === "done"
-      ? "the bot is done. End the call or skip to try again."
+      ? "End the call, or skip to meet someone new on this tag."
       : isMuted
       ? "you're muted, unmute to answer"
       : bot.canHear
@@ -81,7 +88,7 @@ function BotCall({ sessionId }: { sessionId: string }) {
       isWaiting={false}
       isSpeaking={bot.isSpeaking}
       amplitude={bot.amplitude}
-      peerName="Demo bot"
+      peerName={DEMO_MODE ? "Stranger" : "Demo bot"}
       status={status}
       caption={bot.caption}
       onSendMessage={handleSendMessage}
@@ -91,11 +98,11 @@ function BotCall({ sessionId }: { sessionId: string }) {
             onClick={bot.unblock}
             className="min-h-[48px] px-5 rounded-[12px] border-2 border-primary bg-primary text-on-primary text-[15px] font-bold hover:bg-primary-hover transition-colors"
           >
-            Tap to hear the bot
+            Tap to hear {DEMO_MODE ? "the stranger" : "the bot"}
           </button>
         ) : (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-note-orange text-[13px] font-bold">
-            Demo bot · not a real person
+            {DEMO_MODE ? "Demo mode · simulated stranger" : "Demo bot · not a real person"}
           </span>
         )
       }

@@ -65,10 +65,10 @@ export default function ControlBar({
             disabled={!canAddContact || contactAdded}
             aria-label={
               contactAdded
-                ? "Contact added"
+                ? "Friend added"
                 : contactRequestSent
-                ? "Contact request sent"
-                : "Add as contact"
+                ? "Friend request sent"
+                : "Add as friend"
             }
             className={clsx(
               tile,
@@ -82,7 +82,7 @@ export default function ControlBar({
             )}
           >
             {contactAdded ? <Check size={20} /> : <UserPlus size={20} />}
-            {contactAdded ? "Added" : contactRequestSent ? "Sent" : "Contact"}
+            {contactAdded ? "Added" : contactRequestSent ? "Sent" : "Friend"}
           </button>
 
           <button

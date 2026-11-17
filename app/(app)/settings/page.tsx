@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { LogOut, Download, Trash2, ChevronRight, Globe, MessageSquare, Lock, Moon, Sun } from "lucide-react";
+import { Trash2, Globe, Moon, Sun, UserRound } from "lucide-react";
 import { clsx } from "clsx";
 import { useTheme, setTheme, type Theme } from "@/lib/theme";
 import TopNav from "@/components/layout/TopNav";
 import AdSlot from "@/components/ui/AdSlot";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
-import { useAuth } from "@/lib/mockAuth";
+import { useAuth } from "@/lib/auth";
 import { useToast } from "@/components/ui/Toast";
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
@@ -81,34 +81,22 @@ const Row = ({
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  const { user, resetIdentity } = useAuth();
   const { toast } = useToast();
   const theme = useTheme();
 
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [exporting, setExporting] = useState(false);
+  const [forgetOpen, setForgetOpen] = useState(false);
+  const [forgetting, setForgetting] = useState(false);
 
-  const handleLogOut = () => {
-    signOut();
+  // No accounts: "forgetting" drops this device's hidden ID; the next call starts fresh
+  const handleForget = async () => {
+    setForgetting(true);
+    await resetIdentity();
+    setForgetting(false);
+    setForgetOpen(false);
     router.push("/");
-  };
-
-  const handleExport = async () => {
-    setExporting(true);
-    await new Promise(r => setTimeout(r, 1500));
-    setExporting(false);
-    toast("We'll email you a link to download your data shortly.", "info");
-  };
-
-  const handleDelete = async () => {
-    setDeleting(true);
-    await new Promise(r => setTimeout(r, 1500));
-    setDeleting(false);
-    setDeleteOpen(false);
-    signOut();
-    router.push("/");
-    toast("Your account has been deleted.", "info");
+    router.refresh();
+    toast("This device has been forgotten. Your next call starts fresh.", "info");
   };
 
   return (
@@ -128,33 +116,27 @@ export default function SettingsPage() {
           />
         </Section>
 
-        {/* Account section */}
-        <Section title="account">
+        {/* Identity — no accounts, just this device */}
+        <Section title="you">
           <Row
-            icon={MessageSquare}
-            label="Email"
-            sublabel={user?.email ?? "—"}
-            action={<span className="text-[13px] text-muted">Read-only</span>}
+            icon={UserRound}
+            label="You're anonymous"
+            sublabel="No signup, no email. Friends and call history are kept on this device only."
+            action={<span className="text-[13px] text-muted whitespace-nowrap">{user ? "Active" : "Not started"}</span>}
           />
-          <Row
-            icon={Lock}
-            label="Change password"
-            sublabel="Update your account password"
-            action={
-              <button aria-label="Change password" className="w-10 h-10 flex items-center justify-center rounded-[10px] hover:bg-paper-2 transition-colors">
-                <ChevronRight size={20} />
-              </button>
-            }
-          />
-          <Row
-            icon={LogOut}
-            label="Log out"
-            action={
-              <Button variant="secondary" size="sm" onClick={handleLogOut} id="settings-logout">
-                Log out
-              </Button>
-            }
-          />
+          {user && (
+            <Row
+              icon={Trash2}
+              label="Forget this device"
+              sublabel="Start fresh with a new anonymous ID"
+              destructive
+              action={
+                <Button variant="destructive" size="sm" onClick={() => setForgetOpen(true)} id="settings-forget">
+                  Forget
+                </Button>
+              }
+            />
+          )}
         </Section>
 
         {/* Preferences section */}
@@ -193,34 +175,9 @@ export default function SettingsPage() {
           />
         </Section>
 
-        {/* Privacy section */}
-        <Section title="privacy & data">
-          <Row
-            icon={Download}
-            label="Download my data"
-            sublabel="We'll email you a download link"
-            action={
-              <Button variant="secondary" size="sm" onClick={handleExport} loading={exporting} id="settings-export">
-                {exporting ? "Sending…" : "Request"}
-              </Button>
-            }
-          />
-          <Row
-            icon={Trash2}
-            label="Delete my account"
-            sublabel="Permanently removes all your data"
-            destructive
-            action={
-              <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)} id="settings-delete">
-                Delete
-              </Button>
-            }
-          />
-        </Section>
-
         <div className="px-1">
           <p className="text-[13px] text-muted leading-relaxed">
-            PitchLine is an 18+ platform. By continuing to use this service you confirm you meet the age requirement.{" "}
+            Stranger Voice Chat is an 18+ platform. By continuing to use this service you confirm you meet the age requirement.{" "}
             <a href="/terms" className="text-primary hover:underline">Terms of Service</a>{" · "}
             <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>
           </p>
@@ -231,22 +188,23 @@ export default function SettingsPage() {
         </div>
       </main>
 
-      {/* Delete confirmation modal */}
+      {/* Forget-device confirmation */}
       <Modal
-        isOpen={deleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        title="Delete your account?"
+        isOpen={forgetOpen}
+        onClose={() => setForgetOpen(false)}
+        title="Forget this device?"
         destructive
       >
         <p className="text-[15px] text-muted mb-5 leading-relaxed">
-          This permanently deletes your account, contacts, messages and call history. <strong className="text-ink">You can&apos;t undo this.</strong>
+          You&apos;ll get a new anonymous ID. Friends and call history on this device will be gone.{" "}
+          <strong className="text-ink">You can&apos;t undo this.</strong>
         </p>
         <div className="flex gap-3">
-          <Button variant="secondary" className="flex-1" onClick={() => setDeleteOpen(false)} disabled={deleting}>
+          <Button variant="secondary" className="flex-1" onClick={() => setForgetOpen(false)} disabled={forgetting}>
             Cancel
           </Button>
-          <Button variant="destructive" className="flex-1" onClick={handleDelete} loading={deleting} id="confirm-delete-btn">
-            Delete permanently
+          <Button variant="destructive" className="flex-1" onClick={handleForget} loading={forgetting} id="confirm-forget-btn">
+            Forget device
           </Button>
         </div>
       </Modal>

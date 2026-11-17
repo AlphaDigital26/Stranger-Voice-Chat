@@ -7,7 +7,7 @@ export default function NotFound() {
   return (
     <div className="min-h-screen bg-dots flex flex-col">
       <header className="container-app flex items-center h-[72px]">
-        <Link href="/" aria-label="PitchLine home">
+        <Link href="/" aria-label="Stranger Voice Chat home">
           <Logo />
         </Link>
       </header>

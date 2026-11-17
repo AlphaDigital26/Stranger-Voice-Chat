@@ -7,15 +7,8 @@ import { ChatDoodle } from "@/components/doodles/Doodles";
 import TopNav from "@/components/layout/TopNav";
 import AdSlot from "@/components/ui/AdSlot";
 import { MOCK_SESSIONS, formatDuration, formatCallDate } from "@/lib/mockData";
+import { getTag, tagNote } from "@/lib/tags";
 import { clsx } from "clsx";
-
-// Same sticky-note colour per intent as the intent picker
-const INTENT_NOTES: Record<string, string> = {
-  "Pitch My Idea": "bg-note-yellow",
-  "Give Feedback": "bg-note-pink",
-  "Open Discussion": "bg-note-blue",
-  "Founder Chat": "bg-note-green",
-};
 
 const END_REASON_LABELS: Record<string, string> = {
   hangup: "Ended",
@@ -74,7 +67,7 @@ export default function HistoryPage() {
           <div className="mt-8 flex flex-col gap-3">
             {visibleSessions.map((session, i) => {
               const isExpanded = expandedId === session.id;
-              const note = INTENT_NOTES[session.myIntentTag] || "bg-paper-2";
+              const tagLabel = `#${getTag(session.tag)?.label ?? session.tag}`;
 
               return (
                 <div
@@ -88,7 +81,7 @@ export default function HistoryPage() {
                     onClick={() => setExpandedId(isExpanded ? null : session.id)}
                     className="w-full flex items-center gap-4 px-4 py-4 hover:bg-paper-2 transition-colors text-left"
                     aria-expanded={isExpanded}
-                    aria-label={`${session.myIntentTag} call, ${formatDuration(session.durationSeconds)} — ${isExpanded ? "collapse" : "expand"} details`}
+                    aria-label={`${tagLabel} call, ${formatDuration(session.durationSeconds)} — ${isExpanded ? "collapse" : "expand"} details`}
                   >
                     {/* Duration */}
                     <div className="flex flex-col items-center shrink-0 w-14">
@@ -101,12 +94,12 @@ export default function HistoryPage() {
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className={clsx("text-[13px] font-bold px-2.5 py-1 -rotate-1", note)}>
-                          {session.myIntentTag}
+                        <span className={clsx("text-[13px] font-bold px-2.5 py-1 -rotate-1", tagNote(session.tag))}>
+                          {tagLabel}
                         </span>
                         {session.contactAdded && (
                           <span className="flex items-center gap-1 text-[13px] font-bold text-live">
-                            <UserPlus size={13} /> Added
+                            <UserPlus size={13} /> Friend added
                           </span>
                         )}
                       </div>
@@ -126,12 +119,16 @@ export default function HistoryPage() {
                     <div className="px-4 pb-4 border-t-2 border-dashed border-line animate-fade-in">
                       <dl className="grid grid-cols-2 gap-3 mt-3 text-[14px]">
                         <div>
-                          <dt className="font-bold">My intent</dt>
-                          <dd className="text-muted">{session.myIntentTag}</dd>
+                          <dt className="font-bold">Tag</dt>
+                          <dd className="text-muted">{tagLabel}</dd>
                         </div>
                         <div>
-                          <dt className="font-bold">Their intent</dt>
-                          <dd className="text-muted">{session.matchIntentTag}</dd>
+                          <dt className="font-bold">Talk again</dt>
+                          <dd>
+                            <Link href={`/intent?tag=${session.tag}`} className="font-bold text-primary hover:underline">
+                              Find someone on {tagLabel}
+                            </Link>
+                          </dd>
                         </div>
                         <div>
                           <dt className="font-bold">Duration</dt>
