@@ -1,12 +1,17 @@
 "use client";
 
-import { getSupabaseBrowser } from "@/lib/supabase/client";
+import { getSupabaseBrowser, SUPABASE_CONFIGURED } from "@/lib/supabase/client";
 
 // Thin wrappers around the matchmaking functions in
 // supabase/migrations/0001_tag_matching.sql.
 
 /** Thrown when the SQL hasn't been run in Supabase yet, so the UI can say so plainly */
 export class MatchingNotSetUpError extends Error {}
+
+/** No Supabase keys: report "not set up" (the queue then offers the demo bot) instead of crashing */
+function requireSupabase() {
+  if (!SUPABASE_CONFIGURED) throw new MatchingNotSetUpError("Supabase isn't configured for this deploy.");
+}
 
 function check(error: { message: string; code?: string } | null) {
   if (!error) return;
@@ -19,6 +24,7 @@ function check(error: { message: string; code?: string } | null) {
 
 /** Join the queue for a tag. Returns a call id if matched immediately, otherwise null. */
 export async function joinQueue(tag: string, country: string | null, language: string | null) {
+  requireSupabase();
   const { data, error } = await getSupabaseBrowser().rpc("join_queue", {
     p_tag: tag,
     p_country: country,
@@ -30,23 +36,27 @@ export async function joinQueue(tag: string, country: string | null, language: s
 
 /** Check whether someone has matched with us yet (also keeps our queue entry alive). */
 export async function pollMatch() {
+  requireSupabase();
   const { data, error } = await getSupabaseBrowser().rpc("poll_match");
   check(error);
   return (data as string | null) ?? null;
 }
 
 export async function leaveQueue() {
+  if (!SUPABASE_CONFIGURED) return;
   const { error } = await getSupabaseBrowser().rpc("leave_queue");
   if (error) console.warn("leave_queue failed:", error.message);
 }
 
 export async function endCall(callId: string) {
+  if (!SUPABASE_CONFIGURED) return;
   const { error } = await getSupabaseBrowser().rpc("end_call", { p_call: callId });
   if (error) console.warn("end_call failed:", error.message);
 }
 
 /** People waiting per tag right now, as { slug: count }. Empty if matching isn't set up. */
 export async function fetchTagCounts(): Promise<Record<string, number>> {
+  if (!SUPABASE_CONFIGURED) return {};
   const { data, error } = await getSupabaseBrowser().rpc("tag_counts");
   if (error || !Array.isArray(data)) return {};
   return Object.fromEntries((data as Array<{ tag: string; waiting: number }>).map(r => [r.tag, r.waiting]));

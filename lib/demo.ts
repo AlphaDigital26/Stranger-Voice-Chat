@@ -8,7 +8,12 @@
 
 import { ALL_TAGS, POPULAR_TAG_SLUGS } from "@/lib/tags";
 
-export const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+// Also on automatically when Supabase isn't configured, so a deploy without the
+// keys still works as a demo instead of crashing.
+export const DEMO_MODE =
+  process.env.NEXT_PUBLIC_DEMO_MODE === "true" ||
+  !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 /** Call ids starting with this open the simulated call instead of LiveKit */
 export const SIMULATED_CALL_PREFIX = "bot_";

@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { AuthChangeEvent, Session, User } from "@supabase/supabase-js";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
+import { DEMO_MODE } from "@/lib/demo";
 
 // ============================================================
 // Identity without login. Nobody signs up or logs in: the first time someone
@@ -38,11 +39,15 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+// Demo mode has no backend: a local stand-in identity, nothing stored
+const DEMO_USER: AppUser = { id: "demo", ageConfirmedAt: null };
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AppUser | null>(null);
-  const [isLoaded, setLoaded] = useState(false);
+  const [isLoaded, setLoaded] = useState(DEMO_MODE);
 
   useEffect(() => {
+    if (DEMO_MODE) return;
     const supabase = getSupabaseBrowser();
     // Fires once straight away with the current session, then on every change
     const { data } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
@@ -53,6 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const ensureSession = useCallback(async () => {
+    if (DEMO_MODE) return DEMO_USER;
     const supabase = getSupabaseBrowser();
     const { data } = await supabase.auth.getSession();
     if (data.session) return toAppUser(data.session.user);
@@ -65,6 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const confirmAge = useCallback(async () => {
+    if (DEMO_MODE) return;
     const supabase = getSupabaseBrowser();
     const { error } = await supabase.auth.updateUser({ data: { age_confirmed_at: new Date().toISOString() } });
     if (error) throw new Error(error.message);
@@ -73,6 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const resetIdentity = useCallback(async () => {
+    if (DEMO_MODE) return;
     await getSupabaseBrowser().auth.signOut();
   }, []);
 
